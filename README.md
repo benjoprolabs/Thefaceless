@@ -105,6 +105,13 @@ docs/            Architecture
 - **`brands/qhaze/ms/what-if-science/2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung/`**: a new
   Malay project at the Research stage, created from idea `MS-001` with the Malay script template.
 
+**Sample states under M2 (intentional):** both samples were created before v0.4.2 and keep their
+original files; existing `research.md` files are never modified automatically.
+- The **Malay sample** is still at Research and has no `sources.csv`, so `check` correctly reports
+  **FAIL** (`SOURCES_MISSING`): it can't leave Research until a source is added.
+- The **English sample** is already past Research; its sources are still recorded in its
+  `research.md` table rather than in `sources.csv`, so `check` correctly reports a **WARN**.
+
 ## Running tests
 
 ```bash
