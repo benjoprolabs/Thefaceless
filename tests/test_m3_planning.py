@@ -234,3 +234,32 @@ class TestSamplesUnchanged(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestWindowsLineEndings(Base):
+    """Windows checkouts give templates CRLF line endings. New project files
+    must end each line exactly once with the platform's line ending (not the
+    doubled CR CR LF that broke the Windows CI run), and set-date must keep
+    a plan's own line endings."""
+
+    def test_new_project_files_have_single_native_line_endings(self):
+        import os
+        for path in (self.tmp / "templates").rglob("*"):
+            if path.is_file():
+                path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        p = self.new("Windows checkout")
+        for f in p.folder.rglob("*"):
+            if f.is_file() and f.suffix in (".md", ".csv"):
+                rest = f.read_bytes().replace(os.linesep.encode(), b"")
+                self.assertNotIn(b"\r", rest, f.name)
+                self.assertNotIn(b"\n", rest, f.name)
+        self.write_plan(p)
+        self.assertEqual(self.codes(p), [])
+
+    def test_set_date_keeps_crlf_plan_byte_for_byte(self):
+        self.write_plan(when="2026-12-01")
+        path = self.plan_file()
+        crlf = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+        path.write_bytes(crlf)
+        self.ok("plan", "set-date", "plan-test", "2026-12-24")
+        self.assertEqual(path.read_bytes(), crlf.replace(b"2026-12-01", b"2026-12-24"))

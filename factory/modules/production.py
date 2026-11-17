@@ -10,7 +10,7 @@ import unicodedata
 from factory.core.config import FactoryError
 from factory.core.checks import FAIL, WARN, failures, format_finding, run_checks
 from factory.core.errors import describe_os_error, display_path
-from factory.core.files import has_checklist, read_text, title_slug, today, unchecked_items
+from factory.core.files import has_checklist, read_text, title_slug, today, unchecked_items, write_new_text
 from factory.core.options import (add_brand, add_division, add_language, brand_id,
                                   check_division, check_format, check_language)
 from factory.core import migrate as migrate_mod
@@ -112,7 +112,7 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
             stage_dir.mkdir()
             for name in stage["templates"]:
                 text = render_template(ctx.paths, name, values, brand=brand, language=language)
-                (stage_dir / name).write_text(text, encoding="utf-8")
+                write_new_text(stage_dir / name, text)
         project.save()
     except OSError:
         # Don't leave a half-created project behind (it would block a retry).

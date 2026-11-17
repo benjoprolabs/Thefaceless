@@ -17,7 +17,7 @@ from datetime import date
 from factory.core.checks import FAIL, WARN, Finding, register
 from factory.core.config import FactoryError
 from factory.core.errors import display_path
-from factory.core.files import read_text, today
+from factory.core.files import read_text, today, write_text_exact
 from factory.core.options import add_brand, add_division, add_language, brand_id
 from factory.core.projects import find_project, iter_projects
 
@@ -209,7 +209,7 @@ def set_date(ctx, project, value):
                 body = body[:line.start()] + value + body[line.end():]
             else:
                 body = value + "\n" + body
-            path.write_text(text[:start] + body + text[end:], encoding="utf-8")
+            write_text_exact(path, text[:start] + body + text[end:])
             updated_plan = True
     old = project.meta.get("planned_publish", "")
     project.meta["planned_publish"] = value
