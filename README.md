@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 1 (v0.3.2). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 1 (v0.3.3). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -106,7 +106,7 @@ docs/            Architecture
 python3 -m unittest discover -s tests -v
 ```
 
-78 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+100 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
 
 ## Editing CSV files in Excel
 
@@ -138,6 +138,14 @@ Nothing is half-saved: if `new` can't write a project, the partly created folder
 If a `project.json` file can't be read, commands keep working, skip that project and print
 `Warning: Skipped damaged project ...` with the reason. Fix or restore that file (e.g. with
 `git checkout -- <path>`) to bring the project back.
+
+The same warning appears if a project folder was **copied, renamed or moved**: each project's
+`project.json` must match its folder (`brands/<brand>/<language>/<division>/<id>/`), and every
+project id must be unique. Duplicates are skipped (all copies) so nothing is listed or counted twice.
+
+Markdown files saved in another encoding (for example Windows Notepad "ANSI") are read correctly.
+If a settings file in `config/` or a `brand.json` is broken, the error names the file and the
+problem, and suggests `git checkout -- <file>` to restore it.
 
 ## Media files
 

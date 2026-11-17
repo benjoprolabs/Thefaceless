@@ -1,10 +1,8 @@
 """Small file helpers shared by all modules."""
 
 import csv
-import hashlib
 import io
 import json
-import os
 import re
 from datetime import date
 
@@ -21,23 +19,14 @@ def slugify(text, max_len=50):
 
 
 def read_json(path):
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    """Parse a JSON file. Any text encoding is accepted (see read_text);
+    invalid JSON raises json.JSONDecodeError."""
+    return json.loads(read_text(path))
 
 
-def write_json(path, data, private=False):
+def write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    if private:
-        make_private(path)
-
-
-def make_private(path):
-    """Owner-only permissions (no effect on Windows)."""
-    try:
-        os.chmod(path, 0o600)
-    except OSError:
-        pass
 
 
 # ---------------------------------------------------------------- CSV
@@ -48,12 +37,19 @@ def make_private(path):
 # standard UTF-8, comma-separated files.
 
 def _decode(raw):
+    """UTF-8 (with or without BOM), else Windows-1252, else Latin-1 (never fails)."""
     for encoding in ("utf-8-sig", "cp1252"):
         try:
             return raw.decode(encoding)
         except UnicodeDecodeError:
             continue
-    return raw.decode("latin-1")  # never fails
+    return raw.decode("latin-1")
+
+
+def read_text(path):
+    """Read a Markdown/text file written by any editor (e.g. Windows Notepad
+    "ANSI" files are cp1252). Never raises UnicodeDecodeError."""
+    return _decode(path.read_bytes())
 
 
 def _delimiter(first_line):
@@ -116,14 +112,6 @@ def to_float(value, default=0.0):
         return float(str(value).replace(",", "."))
     except (TypeError, ValueError):
         return default
-
-
-def sha256(path):
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 UNCHECKED = re.compile(r"^\s*[-*]\s+\[ \]\s+(.*)$", re.MULTILINE)

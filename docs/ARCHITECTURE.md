@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.3.2 · **Phase:** 1 (Python CLI, local files)
+**Version:** 0.3.3 · **Phase:** 1 (Python CLI, local files)
 
 ---
 
@@ -152,9 +152,9 @@ factory/
 ├── cli.py               Builds the parser from MODULES; validates --lang; prints errors and warnings
 ├── core/
 │   ├── errors.py        FactoryError + plain-language descriptions of file-system errors
-│   ├── config.py        Paths (all locations), Config (cached JSON), Context (+ warnings)
-│   ├── files.py         JSON helpers, Excel-tolerant CSV reading, slugify, checklist parsing
-│   ├── templates.py     {{placeholder}} rendering + override lookup
+│   ├── config.py        Paths, Config (cached, shape-checked JSON settings), Context (+ warnings)
+│   ├── files.py         Encoding-tolerant text/JSON reading, Excel-tolerant CSV, slugify, checklists
+│   ├── templates.py     {{placeholder}} rendering, override lookup, standard CSV columns
 │   ├── projects.py      Project model, damaged-project detection, iter_projects, find_project
 │   ├── options.py       Shared CLI options and validation (brand, language, division, format)
 │   └── validation.py    Platform, URL, date and number validation
@@ -188,7 +188,13 @@ factory/
 | CSV saved by Excel: UTF-8 BOM, Windows (cp1252) encoding, `;` separators, padded headers, blank rows, short rows | Read correctly. When the tool writes the file (e.g. `ideas add`), it is rewritten as standard UTF-8 comma-separated CSV; extra user columns are kept |
 | Idea list missing a required column | Clear error naming the file and the expected first row |
 | Non-numeric score (e.g. `#VALUE!`) or malformed idea ID | Treated as 0 / ignored for numbering; never crashes |
-| Damaged `project.json` (invalid JSON, not an object, missing fields, unknown stage/language/format) | Project skipped; `Warning: Skipped damaged project <path>: <reason>` printed after the command; dashboard shows a count; the folder can't be overwritten by `new` |
+| Damaged `project.json` (invalid JSON, not an object, missing required fields, wrong field types, unknown stage/language/format) | Project skipped; `Warning: Skipped damaged project <path>: <reason>` printed after the command; dashboard shows a count; the folder can't be overwritten by `new` |
+| `project.json` missing optional fields (`brand`, `target_seconds`, `publications`, `idea_id`, `created`) | Safe defaults in memory (brand from the folder, length from the format); written only when the project is next saved |
+| Project folder copied, renamed or moved (id ≠ folder name, or language/division/brand ≠ folder path) | Skipped with a warning saying where it should be |
+| Two folders with the same project id in a brand | **All** copies skipped with one warning listing both paths, so nothing is listed or counted twice (checked across the whole brand, even when filtering) |
+| Markdown, template or JSON file saved as Windows-1252/Latin-1 or with a BOM | Read correctly (UTF-8 → Windows-1252 → Latin-1) |
+| Broken `config/*.json` or `brand.json` (invalid JSON, wrong shape, missing keys) | Clear error naming the file, line/key and `git checkout -- <file>` to restore |
+| `performance.csv` / `shotlist.csv` deleted, emptied or with columns removed | Standard columns come from the template; extra user columns and old rows are kept; a value is never dropped silently |
 | Unknown `--lang` (any command) | Error listing valid languages; input is case-insensitive (`MS` → `ms`) |
 | `new --idea X --lang L` where L is not the idea's language | `Conflicting options` error explaining both fixes (drop `--lang`, or add the idea to the other language's backlog). A matching `--lang` is allowed. A title, `--division` or `--format` given with `--idea` replaces the idea's value |
 | Permission denied / file locked (e.g. open in Excel) / missing file / disk full / read-only disk | `cli.main` turns any `OSError` into a plain message with the file path and a suggested fix; never a traceback. `new` removes a half-created project folder; if only the idea list can't be updated, the message says the project exists and how to finish the link by hand. An unreadable `project.json` is skipped with reason "permission denied" |
@@ -200,7 +206,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (78 tests, < 1 s, no network).
+`python -m unittest discover -s tests -v` (100 tests, < 2 s, no network).
 
 | File | Covers |
 |------|--------|
@@ -210,6 +216,7 @@ factory/
 | `test_cli.py` | complete 10-stage workflow through CLI commands only; command list |
 | `test_audit_fixes.py` | Excel CSV handling, damaged projects, `.gitignore` media rules, `--lang` validation, platform/URL/date/number validation |
 | `test_compat_errors.py` | `--idea`/`--lang` conflicts; friendly permission/file errors (simulated, plus a real read-only test that runs for non-root users); Python 3.9/3.10 grammar, newer-API scan, stdlib-only imports, version guard |
+| `test_hardening.py` | file encodings, broken settings files, incomplete/mistyped `project.json`, copied/misplaced/duplicate projects, analytics and shot-list column recovery, removed leftovers |
 
 ### Python version support
 
@@ -224,5 +231,5 @@ factory/
 ## 8. Roadmap
 
 Development is paused after the v0.3.0 scope reset (Voice Studio removed) and the
-v0.3.1 audit fixes and the v0.3.2 compatibility / error-handling round.
+v0.3.1 audit fixes, the v0.3.2 compatibility / error-handling round and the v0.3.3 hardening round.
 The next phase will be decided and approved separately.

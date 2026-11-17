@@ -8,7 +8,7 @@ import shutil
 
 from factory.core.config import FactoryError
 from factory.core.errors import describe_os_error
-from factory.core.files import slugify, today, unchecked_items
+from factory.core.files import read_text, slugify, today, unchecked_items
 from factory.core.options import (add_brand, add_division, add_language, brand_id,
                                   check_division, check_format, check_language)
 from factory.core.projects import Project, find_project, iter_projects
@@ -94,7 +94,7 @@ def stage_blockers(ctx, project):
     stage_dir = project.stage_dir(ctx, project.stage)
     blockers = []
     for md in sorted(stage_dir.glob("*.md")):
-        blockers += [f"{md.name}: {item}" for item in unchecked_items(md.read_text(encoding="utf-8"))]
+        blockers += [f"{md.name}: {item}" for item in unchecked_items(read_text(md))]
     return blockers
 
 

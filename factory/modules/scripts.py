@@ -1,12 +1,11 @@
 """Module 4: Script Studio. Parse scripts, check length, claims and fact-check coverage."""
 
-import csv
-import io
 import re
 
-from factory.core.files import csv_header
+from factory.core.files import read_csv_table, read_text, write_csv
 from factory.core.config import FactoryError
 from factory.core.projects import find_project
+from factory.core.templates import csv_columns
 
 SCENE = re.compile(r"^##\s*\[SCENE\s+(\d+)\]\s*(.*)$")
 COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
@@ -45,18 +44,18 @@ def script_path(ctx, project):
 
 def project_narration(ctx, project):
     return "\n\n".join(spoken_text(s["narration"]) for s in
-                       parse_scenes(script_path(ctx, project).read_text(encoding="utf-8")))
+                       parse_scenes(read_text(script_path(ctx, project))))
 
 
 def analyse(ctx, project):
-    text = script_path(ctx, project).read_text(encoding="utf-8")
+    text = read_text(script_path(ctx, project))
     scenes = parse_scenes(text)
     wpm = ctx.config.languages[project.language]["words_per_minute"]
     spec = ctx.config.formats[project.meta["format"]]
     words = sum(word_count(spoken_text(s["narration"])) for s in scenes)
     seconds = round(words / wpm * 60)
     claims = sorted({int(n) for s in scenes for n in CLAIM.findall(s["narration"])})
-    factcheck = (project.stage_dir(ctx, "factcheck") / "factcheck.md").read_text(encoding="utf-8")
+    factcheck = read_text(project.stage_dir(ctx, "factcheck") / "factcheck.md")
     checked = {int(n) for n in re.findall(r"^\|\s*F(\d+)\s*\|\s*[^|\s]", factcheck, re.MULTILINE)}
     return {
         "scenes": len(scenes),
@@ -75,7 +74,7 @@ def analyse(ctx, project):
 def build_shotlist(ctx, project):
     """Shot list rows from script scenes, timed by word count."""
     wpm = ctx.config.languages[project.language]["words_per_minute"]
-    text = script_path(ctx, project).read_text(encoding="utf-8")
+    text = read_text(script_path(ctx, project))
     rows, start = [], 0.0
     for s in parse_scenes(text):
         dur = word_count(spoken_text(s["narration"])) / wpm * 60
@@ -109,15 +108,11 @@ def cmd_text(args, ctx):
 def cmd_shotlist(args, ctx):
     p = find_project(ctx, args.project)
     path = p.stage_dir(ctx, "visuals") / "shotlist.csv"
-    existing = list(csv.DictReader(io.StringIO(path.read_text(encoding="utf-8"))))
+    header, existing = read_csv_table(path)  # a missing file is simply recreated
     if len(existing) > 1 and not args.force:
         raise FactoryError("shotlist.csv already has rows. Use --force to overwrite.")
     rows = build_shotlist(ctx, p)
-    fields = csv_header(path)
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fields)
-        w.writeheader()
-        w.writerows(rows)
+    write_csv(path, rows, csv_columns(ctx.paths, "shotlist.csv", header, p.meta["brand"], p.language))
     print(f"Wrote {len(rows)} scenes to {path.relative_to(ctx.paths.root)}")
     return 0
 

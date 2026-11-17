@@ -3,9 +3,10 @@
 from collections import defaultdict
 
 from factory.core.config import FactoryError
-from factory.core.files import append_csv, csv_header, read_csv, today
+from factory.core.files import read_csv, read_csv_table, today, write_csv
 from factory.core.options import add_brand, add_language, brand_id
 from factory.core.projects import find_project, iter_projects
+from factory.core.templates import csv_columns
 from factory.core.validation import check_number, check_platform
 
 NUMERIC = ("views", "watch_time_hours", "likes", "comments", "shares", "subscribers_gained")
@@ -33,11 +34,16 @@ def add_snapshot(ctx, project, platform, **metrics):
         if isinstance(value, (int, float)):
             check_number(FLAGS.get(name, name), value, 0, LIMITS.get(name))
     path = perf_path(ctx, project)
-    fields = csv_header(path)
+    header, rows = read_csv_table(path)
+    fields = csv_columns(ctx.paths, "performance.csv", header, project.meta["brand"], project.language)
+    values = {k: v for k, v in metrics.items() if v is not None}
+    unknown = [k for k in values if k not in fields]
+    if unknown:  # never drop a value silently
+        raise FactoryError(f"performance.csv has no column for: {', '.join(unknown)}")
     row = {f: "" for f in fields}
     row.update({"date_recorded": today(), "platform": platform})
-    row.update({k: v for k, v in metrics.items() if k in fields and v is not None})
-    append_csv(path, row, fields)
+    row.update(values)
+    write_csv(path, rows + [row], fields)
     return row
 
 
@@ -45,7 +51,8 @@ def latest_snapshots(ctx, project):
     """Most recent row per platform (rows are appended over time)."""
     latest = {}
     for row in read_csv(perf_path(ctx, project)):
-        latest[row["platform"]] = row
+        if row.get("platform"):  # rows without a platform can't be attributed
+            latest[row["platform"]] = row
     return latest
 
 

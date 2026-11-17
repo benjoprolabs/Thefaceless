@@ -141,7 +141,13 @@ class TestFriendlyFileErrors(Base):
     def test_unreadable_project_json_is_skipped_with_reason(self):
         create_project(self.ctx, "Locked", "en", "gaming", created="2026-01-01")
         create_project(self.ctx, "Fine", "en", "gaming", created="2026-01-01")
-        with deny("locked/project.json", modes="r"):
+        real_read = Path.read_bytes
+
+        def fail_on_locked(self_path):
+            if self_path.as_posix().endswith("locked/project.json"):
+                raise PermissionError(errno.EACCES, "Permission denied", str(self_path))
+            return real_read(self_path)
+        with mock.patch.object(Path, "read_bytes", fail_on_locked):
             code, out = self.cli("status")
         self.assertEqual(code, 0, out)
         self.assertIn("2026-01-01_fine", out)

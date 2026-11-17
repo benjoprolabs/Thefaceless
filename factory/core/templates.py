@@ -12,6 +12,7 @@ specific first, so a brand or language can customise any template:
 import re
 
 from factory.core.config import FactoryError
+from factory.core.files import csv_header, read_text
 
 PLACEHOLDER = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 
@@ -44,4 +45,14 @@ def find_template(paths, name, brand=None, language=None):
 
 def render_template(paths, name, values, brand=None, language=None):
     path = find_template(paths, name, brand, language)
-    return render(path.read_text(encoding="utf-8"), values)
+    return render(read_text(path), values)
+
+
+def csv_columns(paths, name, existing_header=(), brand=None, language=None):
+    """Columns for a project CSV (e.g. performance.csv, shotlist.csv).
+
+    The template defines the standard columns, so a CSV that was deleted,
+    emptied or had columns removed can be rebuilt without losing data. Any
+    extra columns the user added to the existing file are kept, in order."""
+    columns = csv_header(find_template(paths, name, brand, language))
+    return columns + [c for c in existing_header if c and c not in columns]
