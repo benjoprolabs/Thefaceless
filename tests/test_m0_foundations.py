@@ -83,7 +83,8 @@ class TestChecksFramework(unittest.TestCase):
         self.assertEqual([f.code for f in failures(found)], ["F1"])
         self.assertEqual(format_finding(found[0]), "FAIL F1 [a.md]: fail")
         self.assertEqual(format_finding(found[1]), "WARN W1: warn")
-        self.assertEqual(len(checks.registered("research")), 1)
+        already = len(self.saved.get("research", []))  # e.g. the M1 idea-link check
+        self.assertEqual(len(checks.registered("research")), already + 1)
 
     def test_unknown_level_and_stage_rejected(self):
         @checks.register("research")

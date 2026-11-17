@@ -3,6 +3,9 @@
 * text=auto
 *.py   text
 *.md   text
-*.csv  text
+# CSV files are stored byte-for-byte: they use CRLF line endings by standard
+# (RFC 4180), as written by Python's csv module and Excel. Converting them
+# would make git report unchanged CSV files as modified.
+*.csv  -text
 *.json text
 *.yml  text

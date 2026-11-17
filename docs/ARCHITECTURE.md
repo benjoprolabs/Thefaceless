@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.4.0 · **Phase:** 2, M0 Foundations (Python CLI, local files)
+**Version:** 0.4.1 · **Phase:** 2, M1 Idea Management (Python CLI, local files)
 
 ---
 
@@ -148,7 +148,7 @@ A new brand or language can restyle any template without code changes.
 |---|--------|------|-----|----------------|
 | 1 | Dashboard | `modules/dashboard.py` | `dashboard` | Pipeline counts, languages, divisions, backlog, items needing attention |
 | 2 | Niche Manager | `modules/niches.py` | `niches`, `niches show` | Divisions, rules, visual style, project counts per language |
-| 3 | Idea Manager | `modules/ideas.py` | `ideas`, `ideas add` | Per-language backlog, scoring, links ideas to projects |
+| 3 | Idea Manager | `modules/ideas.py` | `ideas`, `ideas add / show / edit / status / dupes / check / unlink` | Per-language backlog, scoring, status life cycle, tags and notes, duplicate detection, consistency check, idea ↔ project links (published on first publication) |
 | 4 | Script Studio | `modules/scripts.py` | `script check / text / shotlist` | Parse scenes, word count → duration vs format limits, [F#] claim coverage, shot list from scenes |
 | 5 | Visual Library | `modules/library.py` | `library visuals` | Visual style per division |
 | 6 | Production Manager | `modules/production.py` | `new`, `status`, `show`, `advance` | Create projects from templates, stage gates, history |
@@ -188,7 +188,7 @@ factory/
 
 | File | Format | Written by |
 |------|--------|-----------|
-| `brands/<b>/<lang>/ideas.csv` | `id,title,division,format,demand,competition,effort,score,status,project_id,created` | Idea Manager, Production Manager |
+| `brands/<b>/<lang>/ideas.csv` | `id,title,division,format,demand,competition,effort,score,status,project_id,created,tags,notes,updated` (the last three since v0.4.1; older files are read without them and gain them on the next write). Statuses: `backlog`, `shortlisted`, `in_production`, `published`, `rejected`, `archived` | Idea Manager, Production Manager, Publishing Manager |
 | `project.json` | JSON | Production, Publishing |
 | `10_analytics/performance.csv` | one row per snapshot; latest row per platform is used | Analytics |
 | `assets/register.csv` | `id,type,file,source,license,added,notes` | Asset Manager |
@@ -222,7 +222,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (161 tests, < 3 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
+`python -m unittest discover -s tests -v` (198 tests, < 5 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
 
 | File | Covers |
 |------|--------|
@@ -235,6 +235,7 @@ factory/
 | `test_hardening.py` | file encodings, broken settings files, incomplete/mistyped `project.json`, copied/misplaced/duplicate projects, analytics and shot-list column recovery, removed leftovers |
 | `test_remaining_fixes.py` | stage gates with deleted folders/files/checklists, `--brand`/`--division` validation, ID generation (accents, Jawi, suffixes, duplicates), EN/MS same-title IDs, `ideas unlink` |
 | `test_m0_foundations.py` | checks framework, gates using checks, `check`, `back`, `rules.json`, format versions and `migrate` (checksum safety), path display, output encoding, CRLF files, guards for encodings, CI and excluded features |
+| `test_m1_ideas.py` | idea status rules, `new --idea` from backlog/shortlisted only, EN-001 sample data, `ideas check` rules, project-side warnings, duplicates (English, Malay, Jawi), edit and locked fields, show/list filters, automatic published, old and Excel-saved files, Phase 1 regression |
 
 ### Python version support
 

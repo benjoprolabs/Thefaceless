@@ -1,10 +1,12 @@
 """Module 7: Publishing Manager. Record where and when each video was published."""
 
 from factory.core.config import FactoryError
+from factory.core.errors import describe_os_error
 from factory.core.files import today
 from factory.core.options import add_brand, add_language, brand_id
 from factory.core.projects import find_project, iter_projects
 from factory.core.validation import check_date, check_platform, check_url
+from factory.modules import ideas as ideas_mod
 
 
 def record_publication(ctx, project, platform, url, date=None):
@@ -19,7 +21,25 @@ def record_publication(ctx, project, platform, url, date=None):
     pub = {"platform": platform, "url": url, "date": date}
     project.meta.setdefault("publications", []).append(pub)
     project.save()
+    _update_linked_idea(ctx, project)
     return pub
+
+
+def _update_linked_idea(ctx, project):
+    """Mark the project's idea published (M1). The publication is already
+    saved, so a problem here becomes a warning, never an error."""
+    try:
+        message = ideas_mod.mark_published(ctx, project)
+    except (FactoryError, OSError) as e:
+        reason = describe_os_error(e, ctx.paths.root) if isinstance(e, OSError) else str(e)
+        idea_id = project.meta.get("idea_id")
+        ctx.warnings[f"idea-publish:{project.id}"] = (
+            f"Publication saved, but idea {idea_id} could not be marked published: {reason}. "
+            f"When fixed, run: python -m factory ideas status {idea_id} published")
+        return None
+    if message:
+        print(message)
+    return message
 
 
 def cmd_record(args, ctx):

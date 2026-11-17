@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 2 (Content Production Engine) in progress: M0 Foundations (v0.4.0). Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 2 (Content Production Engine) in progress: M1 Idea Management (v0.4.1); M0 Foundations complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -69,7 +69,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 |--------|----------|
 | 1 Dashboard | `dashboard` |
 | 2 Niche Manager | `niches` · `niches show <division>` |
-| 3 Idea Manager | `ideas [--lang en\|ms] [--division ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` · `ideas unlink EN-002` (after its project was deleted) |
+| 3 Idea Manager | `ideas [--lang en\|ms] [--division ...] [--status ...] [--tag ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` · `ideas show ID` · `ideas edit ID [--title] [--division] [--format] [--demand] [--competition] [--effort] [--tags] [--notes]` · `ideas status ID STATUS` · `ideas dupes [--lang]` · `ideas check [--lang]` · `ideas unlink EN-002` (after its project was deleted) |
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
 | 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `check P [--stage S] [--all]` · `advance P [--force]` · `back P` · `migrate [--apply]` |
@@ -110,7 +110,24 @@ docs/            Architecture
 python3 -m unittest discover -s tests -v
 ```
 
-161 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+198 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+
+## Idea statuses
+
+| Status | Meaning | How it changes |
+|---|---|---|
+| `backlog` | New idea | `ideas status ID shortlisted / rejected / archived` |
+| `shortlisted` | Chosen for production soon | back to `backlog`, or `rejected` / `archived` |
+| `rejected` | Not going ahead | `backlog` or `archived` |
+| `archived` | Kept for reference | `backlog` |
+| `in_production` | Has a project | set automatically by `new --idea` (only from backlog or shortlisted) |
+| `published` | Its project was published | set automatically by the project's first `publish record` |
+
+Ideas with a project can't be changed by hand, so the link stays safe; once a project folder is
+deleted, `ideas unlink ID` returns its idea to the backlog. Division and format are locked for
+ideas with a project; title, scores, tags and notes can still be edited. `ideas dupes` finds
+similar titles in the same language (threshold in `config/rules.json`), `ideas add` warns about
+them, and `ideas check` reports any inconsistency without changing anything.
 
 ## Stage gates and automated checks
 
