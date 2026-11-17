@@ -2,5 +2,8 @@
   "_comment": "Thresholds used by automated checks. Change values here; no code changes needed. Phase 2 milestones add their own sections.",
   "script": {
     "target_tolerance_percent": 20
+  },
+  "ideas": {
+    "duplicate_threshold": 0.85
   }
 }

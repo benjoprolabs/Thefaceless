@@ -84,6 +84,8 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
     created = created or today()
     if not title.strip():
         raise FactoryError("The title can't be empty")
+    if idea_id:  # only backlog/shortlisted ideas without a project (M1 decision 2)
+        ideas_mod.check_producible(ctx, brand, language, idea_id)
     project_id = new_project_id(ctx, brand, language, title, created)
     folder = ctx.paths.division_dir(brand, language, division) / project_id
     if folder.exists():

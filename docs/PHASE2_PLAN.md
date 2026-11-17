@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Approved plan. In progress: M0 Foundations (v0.4.0) |
+| **Status** | Approved plan. Done: M0 (v0.4.0). In progress: M1 Idea Management (v0.4.1) |
 | **Baseline** | Phase 1, v0.3.4 (`main` at `b021dd8`) |
 | **Target** | v0.5.0, Phase 2 complete |
 | **Roadmap** | Phase 2 of 6 (see [ARCHITECTURE.md](ARCHITECTURE.md#8-roadmap-official-approved)) |

@@ -234,7 +234,7 @@ class TestPythonCompatibility(unittest.TestCase):
                     self.assertIsNone(re.search(pattern, line), f"{path.name}:{n} uses {why}: {line.strip()}")
 
     def test_only_standard_library_imports(self):
-        stdlib = {"argparse", "ast", "builtins", "collections", "contextlib", "csv", "datetime", "errno",
+        stdlib = {"argparse", "ast", "builtins", "collections", "contextlib", "csv", "datetime", "difflib", "errno",
                   "fnmatch", "hashlib", "io", "json", "os", "pathlib", "re", "shutil", "stat", "subprocess",
                   "sys", "tempfile", "unicodedata", "unittest", "urllib"}
         for path in self.FILES:
