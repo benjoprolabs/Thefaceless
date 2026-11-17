@@ -1,0 +1,51 @@
+{
+  "what-if-science": {
+    "name": "What If & Science",
+    "name_ms": "Bagaimana Jika & Sains",
+    "description": "Hypothetical scenarios and science explainers.",
+    "visual_style": "cinematic-explainer",
+    "notes": "Separate established science from speculation in the script."
+  },
+  "psychology": {
+    "name": "Psychology",
+    "name_ms": "Psikologi",
+    "description": "Human behaviour, biases, habits and the mind.",
+    "visual_style": "minimal-illustration",
+    "notes": "No medical or diagnostic advice. Cite studies, avoid overclaiming."
+  },
+  "history-mystery": {
+    "name": "History & Mystery",
+    "name_ms": "Sejarah & Misteri",
+    "description": "Historical events, unsolved cases and legends.",
+    "visual_style": "archival-documentary",
+    "notes": "Label legends and theories clearly. Check rights on archival images."
+  },
+  "product-affiliate": {
+    "name": "Product & Affiliate",
+    "name_ms": "Produk & Afiliasi",
+    "description": "Product reviews, comparisons and affiliate recommendations.",
+    "visual_style": "clean-product",
+    "notes": "Affiliate links must be disclosed in the video and description."
+  },
+  "technology-ai": {
+    "name": "Technology & AI",
+    "name_ms": "Teknologi & AI",
+    "description": "Gadgets, software, AI tools and tech news explained.",
+    "visual_style": "tech-motion",
+    "notes": "Tech changes fast: record the date each fact was checked."
+  },
+  "food-cooking": {
+    "name": "Food & Cooking",
+    "name_ms": "Makanan & Masakan",
+    "description": "Recipes, food facts and cooking techniques.",
+    "visual_style": "warm-overhead",
+    "notes": "List allergens where relevant. Check food-safety claims."
+  },
+  "gaming": {
+    "name": "Gaming",
+    "name_ms": "Permainan",
+    "description": "Game lore, tips, facts and industry stories.",
+    "visual_style": "gameplay-montage",
+    "notes": "Follow each publisher's gameplay footage policy."
+  }
+}

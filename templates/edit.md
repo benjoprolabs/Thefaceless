@@ -1,16 +1,12 @@
-# Edit Notes: {{title}}
+# Video Editing: {{title}}
 
-- **Project ID:** {{project_id}}
 - **Editor:** <!-- CapCut / DaVinci Resolve / Premiere / FFmpeg -->
-- **Resolution / aspect:** {{resolution}} ({{aspect_ratio}})
+- **Timeline:** {{resolution}} ({{aspect_ratio}}), 30 fps
 
-## Checklist
-- [ ] Voice-over placed on timeline (03_voice/voiceover.wav)
-- [ ] Every scene from 04_visuals/shotlist.csv covered
-- [ ] Background music under voice (-20 to -25 dB), license recorded
-- [ ] Brand intro/outro from assets/brand/
-- [ ] Subtitles burned in or attached (06_subtitles/)
-- [ ] No visual stays on screen longer than ~5 seconds without change
-- [ ] Exported to 07_export/
-
-## Notes
+## Stage checklist
+- [ ] Final voice-over from `05_voice/exports/` on the timeline
+- [ ] Every shot list scene placed
+- [ ] Music under voice (−20 to −25 dB), licence recorded
+- [ ] Brand intro/outro and watermark from `assets/brand/`
+- [ ] Captions added (burned in for short-form)
+- [ ] Exported master to `09_publish/` (not committed to git)

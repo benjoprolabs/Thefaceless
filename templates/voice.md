@@ -1,16 +1,32 @@
 # Voice-over: {{title}}
 
-- **Project ID:** {{project_id}}
-- **TTS tool:** <!-- e.g. Piper (local), or any tool you already use -->
-- **Voice / model:**
-- **Speed / pitch:**
+- **Project:** {{project_id}}
+- **Language:** {{language_name}}
+- **Voice preset:** {{voice_preset}}
+- **Method:** <!-- tts / record + convert / record only -->
 
-## Checklist
-- [ ] Script marked "final" in 02_script/script.md
-- [ ] Pronunciation of names / numbers checked
-- [ ] Exported as `voiceover.wav` (48 kHz, mono or stereo) into this folder
-- [ ] Listened end-to-end; no glitches or mispronunciations
-- [ ] Loudness roughly -16 LUFS (YouTube) / -14 LUFS (Shorts/TikTok)
-- [ ] Final duration recorded below
+Audio files live in this folder and every action is logged in `audio_log.json`:
 
-**Final duration:** __ seconds
+| Folder | Contents |
+|--------|----------|
+| `raw/` | Original recordings and uploads. **Never modified.** |
+| `edited/` | Trimmed copies of raw takes |
+| `tts/` | Text-to-speech output |
+| `converted/` | Voice-changer output |
+| `exports/` | Final MP3/WAV for the editor |
+
+Useful commands:
+```
+python -m factory voice tts {{project_id}} --preset {{voice_preset}}
+python -m factory voice import {{project_id}} my_take.wav
+python -m factory voice convert {{project_id}} A001 --preset {{voice_preset}}
+python -m factory voice list {{project_id}}
+python -m factory voice select {{project_id}} A00X
+python -m factory voice export {{project_id}} A00X --format wav
+```
+
+## Stage checklist
+- [ ] Narration matches the fact-checked script
+- [ ] Names and numbers pronounced correctly
+- [ ] Final take selected (`voice select`)
+- [ ] Final take exported to `exports/`

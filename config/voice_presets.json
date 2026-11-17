@@ -1,0 +1,197 @@
+{
+  "_comment": "Narrator presets. Fill engine_voices.elevenlabs.voice_id with a voice from your ElevenLabs Voice Library before enabling that engine.",
+  "presets": {
+    "male-deep": {
+      "label": "Male Deep",
+      "gender": "male",
+      "style": "deep",
+      "description": "Low, resonant, authoritative",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.6,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "speed": 0.95
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-male-deep"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "male-soft": {
+      "label": "Male Soft",
+      "gender": "male",
+      "style": "soft",
+      "description": "Gentle, warm, close-mic",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.7,
+        "similarity_boost": 0.75,
+        "style": 0.1,
+        "speed": 0.95
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-male-soft"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "male-documentary": {
+      "label": "Male Documentary",
+      "gender": "male",
+      "style": "documentary",
+      "description": "Clear, neutral, measured pacing",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.75,
+        "similarity_boost": 0.8,
+        "style": 0.05,
+        "speed": 1.0
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-male-documentary"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "male-storytelling": {
+      "label": "Male Storytelling",
+      "gender": "male",
+      "style": "storytelling",
+      "description": "Expressive, dramatic pauses, varied pitch",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.45,
+        "similarity_boost": 0.8,
+        "style": 0.45,
+        "speed": 0.98
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-male-storytelling"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "female-deep": {
+      "label": "Female Deep",
+      "gender": "female",
+      "style": "deep",
+      "description": "Low, resonant, authoritative",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.6,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "speed": 0.95
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-female-deep"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "female-soft": {
+      "label": "Female Soft",
+      "gender": "female",
+      "style": "soft",
+      "description": "Gentle, warm, close-mic",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.7,
+        "similarity_boost": 0.75,
+        "style": 0.1,
+        "speed": 0.95
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-female-soft"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "female-documentary": {
+      "label": "Female Documentary",
+      "gender": "female",
+      "style": "documentary",
+      "description": "Clear, neutral, measured pacing",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.75,
+        "similarity_boost": 0.8,
+        "style": 0.05,
+        "speed": 1.0
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-female-documentary"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    },
+    "female-storytelling": {
+      "label": "Female Storytelling",
+      "gender": "female",
+      "style": "storytelling",
+      "description": "Expressive, dramatic pauses, varied pitch",
+      "languages": [
+        "en",
+        "ms"
+      ],
+      "settings": {
+        "stability": 0.45,
+        "similarity_boost": 0.8,
+        "style": 0.45,
+        "speed": 0.98
+      },
+      "engine_voices": {
+        "mock": {
+          "voice_id": "mock-female-storytelling"
+        },
+        "elevenlabs": {
+          "voice_id": ""
+        }
+      }
+    }
+  }
+}

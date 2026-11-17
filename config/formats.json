@@ -1,0 +1,20 @@
+{
+  "short": {
+    "label": "Short-form",
+    "min_seconds": 15,
+    "max_seconds": 90,
+    "default_seconds": 60,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "platforms": ["youtube_shorts", "tiktok", "instagram_reels", "facebook_reels"]
+  },
+  "long": {
+    "label": "Long-form",
+    "min_seconds": 300,
+    "max_seconds": 1200,
+    "default_seconds": 600,
+    "aspect_ratio": "16:9",
+    "resolution": "1920x1080",
+    "platforms": ["youtube", "facebook"]
+  }
+}

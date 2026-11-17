@@ -1,0 +1,100 @@
+{
+  "selected": "A001",
+  "items": [
+    {
+      "id": "A001",
+      "kind": "tts",
+      "file": "tts/A001_female-documentary.wav",
+      "created": "2026-11-17",
+      "engine": "mock",
+      "voice": "female-documentary",
+      "language": "en",
+      "format": "wav",
+      "duration_sec": 36.8,
+      "sha256": "f7e7f80e18e93e0f3ee22b625ce9aaab4a39b2d5607207d8118aa8d065526eac"
+    },
+    {
+      "id": "A002",
+      "kind": "tts",
+      "file": "tts/A002_female-storytelling.wav",
+      "created": "2026-11-17",
+      "engine": "mock",
+      "voice": "female-storytelling",
+      "language": "en",
+      "format": "wav",
+      "duration_sec": 37.551,
+      "sha256": "9ca9abee51729dab4558190db5de554cae728ac5b6cbe8ddc9c10e64b62bbc86"
+    },
+    {
+      "id": "A003",
+      "kind": "raw",
+      "file": "raw/take-001_my_take.wav",
+      "created": "2026-11-17",
+      "take": 1,
+      "source_file": "my_take.wav",
+      "format": "wav",
+      "duration_sec": 40.0,
+      "sha256": "adc1949633ff5894320e2ba2be062ce8474e35eaf4e670f9818321c699409a20",
+      "note": "own narration, take 1"
+    },
+    {
+      "id": "A004",
+      "kind": "edited",
+      "file": "edited/take-001_my_take_trim.wav",
+      "created": "2026-11-17",
+      "parent": "A003",
+      "trim": [
+        0.5,
+        38.0
+      ],
+      "format": "wav",
+      "duration_sec": 37.5,
+      "sha256": "cacde388e59761dbc96d02b50e83514263ecacefb3806d71ad9e15418cac4669"
+    },
+    {
+      "id": "A005",
+      "kind": "converted",
+      "file": "converted/A005_male-documentary.wav",
+      "created": "2026-11-17",
+      "parent": "A004",
+      "engine": "mock",
+      "voice": "male-documentary",
+      "language": "en",
+      "format": "wav",
+      "duration_sec": 37.5,
+      "sha256": "cacde388e59761dbc96d02b50e83514263ecacefb3806d71ad9e15418cac4669"
+    },
+    {
+      "id": "A006",
+      "kind": "raw",
+      "file": "raw/take-002_short.m4a",
+      "created": "2026-11-17",
+      "take": 2,
+      "source_file": "short.m4a",
+      "format": "m4a",
+      "duration_sec": 3.0,
+      "sha256": "c9d46ff7b4b74f4cd007ef3996cb3c1765e31c18caa0bd5f78ed5c368961208e",
+      "note": "pickup line"
+    },
+    {
+      "id": "A007",
+      "kind": "export",
+      "file": "exports/2026-11-17_why-octopuses-have-three-hearts_voiceover.wav",
+      "created": "2026-11-17",
+      "parent": "A001",
+      "format": "wav",
+      "duration_sec": 36.8,
+      "sha256": "f7e7f80e18e93e0f3ee22b625ce9aaab4a39b2d5607207d8118aa8d065526eac"
+    },
+    {
+      "id": "A008",
+      "kind": "export",
+      "file": "exports/2026-11-17_why-octopuses-have-three-hearts_voiceover.mp3",
+      "created": "2026-11-17",
+      "parent": "A001",
+      "format": "mp3",
+      "duration_sec": 36.9,
+      "sha256": "92889dd8976bac93e03d25362e7f602f57a18ca1663faccb3ce42e52df758e76"
+    }
+  ]
+}

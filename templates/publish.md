@@ -1,29 +1,29 @@
 # Publishing: {{title}}
 
-- **Project ID:** {{project_id}}
-- **Final file:** 07_export/final.mp4
-- **Thumbnail:** 07_export/thumbnail.png
+- **Channel:** {{brand_name}} · {{language_name}}
+- **Format:** {{format_label}}
 
-## Title options (pick one, ≤ 60 chars)
+## Title options
 1.
 2.
 3.
 
 ## Description
-<!-- First 2 lines matter most. Include sources section. -->
+<!-- First 2 lines matter most. Include a Sources section. -->
 
-## Tags / hashtags
+## Hashtags / tags
 
+
+## Affiliate disclosure (Product & Affiliate division only)
+<!-- e.g. "Some links are affiliate links. We may earn a commission at no extra cost to you." -->
 
 ## Platforms
-| Platform | Scheduled for | Published URL | Published on |
-|----------|---------------|---------------|--------------|
-| YouTube  |               |               |              |
-| Shorts   |               |               |              |
-| TikTok   |               |               |              |
+Record each publish with:
+`python -m factory publish record {{project_id}} --platform youtube --url <URL>`
 
-## Pre-publish checklist
-- [ ] All footage/music licenses recorded in 04_visuals/shotlist.csv
-- [ ] Facts double-checked against sources in 01_research/idea.md
-- [ ] Subtitles uploaded
-- [ ] AI-generated content disclosure set where the platform requires it
+## Stage checklist
+- [ ] Title and description final
+- [ ] Captions/subtitles uploaded
+- [ ] Affiliate disclosure added (if applicable)
+- [ ] AI-content disclosure set where the platform requires it
+- [ ] Published and recorded with `publish record`

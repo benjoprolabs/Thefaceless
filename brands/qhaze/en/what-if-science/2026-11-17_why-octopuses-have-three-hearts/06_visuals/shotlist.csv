@@ -1,0 +1,5 @@
+scene,start_sec,end_sec,narration_summary,visual_type,visual_description,source,license,file,status
+1,0,5,Hook,stock_footage,Close-up of octopus on sea floor,Pexels (sample),Pexels License,broll/octopus_closeup.mp4,done
+2,5,14,Setup,animation,Octopus diagram highlighting two gill hearts,self-made,own,06_visuals/gill_hearts.mp4,done
+3,14,26,Main point,animation,Central heart with arrows to arms; blue blood graphic,self-made,own,06_visuals/main_heart.mp4,done
+4,26,36,Payoff & call to action,stock_footage,Octopus crawling over rocks + QHAZE logo,Pexels (sample),Pexels License,broll/octopus_crawl.mp4,done

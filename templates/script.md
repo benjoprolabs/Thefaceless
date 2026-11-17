@@ -1,18 +1,19 @@
 # Script: {{title}}
 
-- **Project ID:** {{project_id}}
-- **Format:** {{format}} (target ≈ {{target_seconds}} seconds ≈ {{target_words}} words)
-- **Voice:** <!-- TTS voice name / settings -->
-- **Status:** draft
+- **Project:** {{project_id}}
+- **Language:** {{language_name}}
+- **Target:** {{target_seconds}} s ≈ {{target_words}} words
 
 <!--
-Writing rules for faceless voice-over:
+Rules:
 - Write for the ear: short sentences, one idea per sentence.
-- Each [SCENE] block becomes one row in visuals/shotlist.csv.
-- Text inside [SCENE x] headers and HTML comments is NOT read aloud.
+- Each "## [SCENE n]" block becomes one row in 06_visuals/shotlist.csv.
+- Headings, HTML comments and the checklist are NOT read aloud.
+  Only plain paragraphs under a [SCENE] heading are narration.
+- Mark every factual claim with [F1], [F2]... and list it in 04_factcheck/factcheck.md.
 -->
 
-## [SCENE 1] Hook (0–5s)
+## [SCENE 1] Hook
 <!-- Visual: -->
 
 
@@ -20,18 +21,15 @@ Writing rules for faceless voice-over:
 <!-- Visual: -->
 
 
-## [SCENE 3] Main point 1
+## [SCENE 3] Main point
 <!-- Visual: -->
 
 
-## [SCENE 4] Main point 2
+## [SCENE 4] Payoff & call to action
 <!-- Visual: -->
 
 
-## [SCENE 5] Main point 3 / twist
-<!-- Visual: -->
-
-
-## [SCENE 6] Payoff & call to action
-<!-- Visual: -->
-
+## Stage checklist
+- [ ] `python -m factory script check {{project_id}}` shows length within range
+- [ ] Every claim marked [F#]
+- [ ] Read aloud once

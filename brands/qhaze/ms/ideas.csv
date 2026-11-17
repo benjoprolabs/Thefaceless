@@ -1,0 +1,5 @@
+id,title,division,format,demand,competition,effort,score,status,project_id,created
+MS-001,Kenapa sotong kurita ada tiga jantung,what-if-science,short,4,2,2,4.0,in_production,2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung,2026-11-17
+MS-002,Misteri Kota Gelanggi,history-mystery,long,4,2,4,3.5,backlog,,2026-11-17
+MS-003,Sejarah ringkas nasi lemak,food-cooking,short,5,3,2,4.2,backlog,,2026-11-17
+MS-004,Alat AI percuma untuk pelajar,technology-ai,short,5,4,1,4.2,backlog,,2026-11-17

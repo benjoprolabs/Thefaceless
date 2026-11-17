@@ -1,0 +1,68 @@
+{
+  "id": "2026-11-17_why-octopuses-have-three-hearts",
+  "title": "Why octopuses have three hearts",
+  "brand": "qhaze",
+  "language": "en",
+  "division": "what-if-science",
+  "format": "short",
+  "target_seconds": 45,
+  "idea_id": "EN-001",
+  "voice_preset": "female-documentary",
+  "stage": "analytics",
+  "created": "2026-11-17",
+  "history": [
+    {
+      "stage": "research",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "planning",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "script",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "factcheck",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "voice",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "visuals",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "edit",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "qc",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "publish",
+      "date": "2026-11-17"
+    },
+    {
+      "stage": "analytics",
+      "date": "2026-11-17"
+    }
+  ],
+  "publications": [
+    {
+      "platform": "youtube_shorts",
+      "url": "https://example.com/sample-short",
+      "date": "2026-11-20"
+    },
+    {
+      "platform": "tiktok",
+      "url": "https://example.com/sample-tiktok",
+      "date": "2026-11-20"
+    }
+  ],
+  "sample": true
+}

@@ -1,3 +1,3 @@
-"""QHAZE Faceless Content Factory - local, file-based content pipeline."""
+"""QHAZE Faceless Content Factory: local, file-based content production pipeline."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

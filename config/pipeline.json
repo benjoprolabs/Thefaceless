@@ -1,12 +1,14 @@
 {
   "stages": [
-    {"id": "research",  "folder": "01_research",  "label": "Research & idea",      "templates": ["idea.md"]},
-    {"id": "script",    "folder": "02_script",    "label": "Script",               "templates": ["script.md"]},
-    {"id": "voice",     "folder": "03_voice",     "label": "AI voice-over",        "templates": ["voice.md"]},
-    {"id": "visuals",   "folder": "04_visuals",   "label": "Visuals & footage",    "templates": ["shotlist.csv"]},
-    {"id": "edit",      "folder": "05_edit",      "label": "Video editing",        "templates": ["edit.md"]},
-    {"id": "subtitles", "folder": "06_subtitles", "label": "Subtitles",            "templates": []},
-    {"id": "export",    "folder": "07_export",    "label": "Export & publishing",  "templates": ["publish.md"]},
-    {"id": "published", "folder": null,           "label": "Published (tracking)", "templates": []}
+    {"id": "research",  "folder": "01_research",  "label": "Research",         "module": "Idea Manager",        "templates": ["research.md"]},
+    {"id": "planning",  "folder": "02_planning",  "label": "Content Planning", "module": "Production Manager",  "templates": ["plan.md"]},
+    {"id": "script",    "folder": "03_script",    "label": "Script Writing",   "module": "Script Studio",       "templates": ["script.md"]},
+    {"id": "factcheck", "folder": "04_factcheck", "label": "Fact Checking",    "module": "Script Studio",       "templates": ["factcheck.md"]},
+    {"id": "voice",     "folder": "05_voice",     "label": "Voice-over",       "module": "Voice Studio",        "templates": ["voice.md"]},
+    {"id": "visuals",   "folder": "06_visuals",   "label": "Visual Production","module": "Voice & Visual Library", "templates": ["visuals.md", "shotlist.csv"]},
+    {"id": "edit",      "folder": "07_edit",      "label": "Video Editing",    "module": "Production Manager",  "templates": ["edit.md"]},
+    {"id": "qc",        "folder": "08_qc",        "label": "Quality Control",  "module": "Production Manager",  "templates": ["qc.md"]},
+    {"id": "publish",   "folder": "09_publish",   "label": "Publishing",       "module": "Publishing Manager",  "templates": ["publish.md"]},
+    {"id": "analytics", "folder": "10_analytics", "label": "Analytics",        "module": "Analytics",           "templates": ["performance.csv"]}
   ]
 }

@@ -1,0 +1,9 @@
+{
+  "cinematic-explainer": {"description": "Space/nature stock footage, slow zooms, bold captions", "music_mood": "ambient, wondering", "caption_style": "large centred, keyword highlight"},
+  "minimal-illustration": {"description": "Flat illustrations, simple icons, calm colours", "music_mood": "soft piano, lo-fi", "caption_style": "clean lower-third"},
+  "archival-documentary": {"description": "Archival photos, maps, Ken Burns pans, film grain", "music_mood": "tense, orchestral", "caption_style": "serif, lower-third"},
+  "clean-product": {"description": "Product shots on plain backgrounds, spec cards, comparison tables", "music_mood": "upbeat, light", "caption_style": "bold, price/spec callouts"},
+  "tech-motion": {"description": "Screen recordings, UI mockups, glowing motion graphics", "music_mood": "electronic, driving", "caption_style": "monospace accents"},
+  "warm-overhead": {"description": "Overhead cooking shots, close-ups, warm grading", "music_mood": "acoustic, cheerful", "caption_style": "rounded, ingredient callouts"},
+  "gameplay-montage": {"description": "Gameplay clips, fast cuts, on-screen UI highlights", "music_mood": "energetic, synth", "caption_style": "bold outline, punchy"}
+}
