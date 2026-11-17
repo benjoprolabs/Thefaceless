@@ -11,10 +11,16 @@ the CLI prints after every command.
 import json
 
 from factory.core.config import FactoryError
+from factory.core.errors import display_path
 from factory.core.files import read_json, write_json
 
 PROJECT_FILE = "project.json"
 REQUIRED_FIELDS = ("id", "title", "language", "division", "format", "stage", "history")
+
+# Project file format version. 1 = Phase 1 (no "schema_version" field).
+# Raise it when a milestone needs new project files, and add a step to
+# factory/core/migrate.py that creates them for older projects.
+CURRENT_SCHEMA = 2
 
 
 class Project:
@@ -64,6 +70,12 @@ def project_problem(ctx, meta):
         return f"unknown language '{meta['language']}'"
     if meta["format"] not in ctx.config.formats:
         return f"unknown format '{meta['format']}'"
+    version = meta.get("schema_version", 1)
+    if isinstance(version, bool) or not isinstance(version, int) or version < 1:
+        return "'schema_version' must be a whole number from 1"
+    if version > CURRENT_SCHEMA:
+        return (f"it was saved by a newer version of the factory (format {version}; this version "
+                f"reads up to {CURRENT_SCHEMA}). Update the factory to open it")
     seconds = meta.get("target_seconds")
     if seconds is not None and (isinstance(seconds, bool) or not isinstance(seconds, int) or seconds <= 0):
         return "'target_seconds' must be a whole number of seconds"
@@ -77,6 +89,7 @@ def project_problem(ctx, meta):
 def fill_defaults(ctx, meta, brand):
     """Optional fields added in later versions or removed by hand get safe
     defaults in memory (written to disk only when the project is next saved)."""
+    meta.setdefault("schema_version", 1)
     meta.setdefault("brand", brand)
     meta.setdefault("target_seconds", ctx.config.formats[meta["format"]]["default_seconds"])
     meta.setdefault("publications", [])
@@ -106,7 +119,7 @@ def location_problem(meta_path, meta):
 
 
 def _rel(ctx, path):
-    return path.relative_to(ctx.paths.root) if ctx.paths.root in path.parents else path
+    return display_path(path, ctx.paths.root)
 
 
 def load_checked(ctx, meta_path):
@@ -127,7 +140,7 @@ def load_checked(ctx, meta_path):
         if problem is None:
             return Project(meta_path.parent, meta)
     rel = _rel(ctx, meta_path)
-    ctx.warnings[str(rel)] = f"Skipped damaged project {rel}: {problem}"
+    ctx.warnings[rel] = f"Skipped damaged project {rel}: {problem}"
     return None
 
 
@@ -149,7 +162,7 @@ def iter_projects(ctx, brand=None, language=None, division=None):
         by_id.setdefault((project.meta["brand"], project.id), []).append(project)
     for (brand_id, project_id), copies in by_id.items():
         if len(copies) > 1:
-            places = " and ".join(str(_rel(ctx, c.folder)) for c in copies)
+            places = " and ".join(_rel(ctx, c.folder) for c in copies)
             ctx.warnings[f"duplicate:{brand_id}:{project_id}"] = (
                 f"Skipped duplicate project id '{project_id}' found in {places}. "
                 "Each project needs its own id: rename the copy's folder and its 'id', or remove it.")

@@ -4,6 +4,8 @@ import re
 
 from factory.core.files import read_csv_table, read_text, write_csv
 from factory.core.config import FactoryError
+from factory.core.checks import FAIL, WARN, Finding, register
+from factory.core.errors import display_path
 from factory.core.projects import find_project
 from factory.core.templates import csv_columns
 
@@ -71,6 +73,44 @@ def analyse(ctx, project):
     }
 
 
+# ------------------------------------------------------------ checks
+# The Phase 1 rules of `script check`, as findings used by the stage gates.
+
+def _script_file(ctx, project, stage):
+    return display_path(project.stage_dir(ctx, stage) / f"{stage}.md", project.folder)
+
+
+@register("script")
+def check_script(ctx, project):
+    tolerance = ctx.config.rules["script"]["target_tolerance_percent"] / 100  # read first: a broken
+    r = analyse(ctx, project)                                                  # rules.json always shows
+    file = _script_file(ctx, project, "script")
+    findings = []
+    if r["scenes"] == 0:
+        findings.append(Finding(FAIL, "SCRIPT_NO_SCENES", "the script has no [SCENE n] sections", file))
+    for n in r["empty_scenes"]:
+        findings.append(Finding(FAIL, "SCRIPT_EMPTY_SCENE", f"scene {n} has no narration", file))
+    if r["scenes"] and not r["in_range"]:
+        findings.append(Finding(FAIL, "SCRIPT_LENGTH",
+                                f"estimated {r['seconds']} s is outside {r['min_seconds']}–{r['max_seconds']} s "
+                                f"for {project.meta['format']}-form", file))
+    else:
+        target = r["target_seconds"]
+        if r["scenes"] and target and abs(r["seconds"] - target) > target * tolerance:
+            findings.append(Finding(WARN, "SCRIPT_TARGET",
+                                    f"estimated {r['seconds']} s is more than {round(tolerance * 100)}% "
+                                    f"from the {target} s target", file))
+    return findings
+
+
+@register("factcheck")
+def check_claims_covered(ctx, project):
+    r = analyse(ctx, project)
+    file = _script_file(ctx, project, "factcheck")
+    return [Finding(FAIL, "FACTCHECK_MISSING_CLAIM", f"claim F{n} from the script has no row in factcheck.md", file)
+            for n in r["unchecked_claims"]]
+
+
 def build_shotlist(ctx, project):
     """Shot list rows from script scenes, timed by word count."""
     wpm = ctx.config.languages[project.language]["words_per_minute"]
@@ -113,7 +153,7 @@ def cmd_shotlist(args, ctx):
         raise FactoryError("shotlist.csv already has rows. Use --force to overwrite.")
     rows = build_shotlist(ctx, p)
     write_csv(path, rows, csv_columns(ctx.paths, "shotlist.csv", header, p.meta["brand"], p.language))
-    print(f"Wrote {len(rows)} scenes to {path.relative_to(ctx.paths.root)}")
+    print(f"Wrote {len(rows)} scenes to {display_path(path, ctx.paths.root)}")
     return 0
 
 

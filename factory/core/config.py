@@ -7,7 +7,7 @@ in exactly one place. Tests pass a temporary root to `Paths`.
 import json
 from pathlib import Path
 
-from factory.core.errors import FactoryError  # noqa: F401  (re-exported)
+from factory.core.errors import FactoryError, display_path  # noqa: F401  (FactoryError re-exported)
 from factory.core.files import read_json
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -26,6 +26,7 @@ SCHEMAS = {
     "pipeline": {"keys": ["stages"], "list": ("stages", ["id", "folder", "label", "module", "templates"])},
     "platforms": {"each": ["label", "domains"]},
     "visual_styles": {"each": ["description", "music_mood", "caption_style"]},
+    "rules": {"keys": ["script"]},
     "brand": {"keys": ["id", "name", "divisions", "channels"],
               "list": ("channels", ["id", "name", "language", "platforms"])},
 }
@@ -33,10 +34,7 @@ SCHEMAS = {
 
 def load_settings_file(path, schema, root):
     """Load and shape-check a settings JSON file; raise FactoryError if broken."""
-    try:
-        rel = path.relative_to(root).as_posix()
-    except ValueError:
-        rel = str(path)
+    rel = display_path(path, root)
     fix = f"Fix the file, or restore the original with: git checkout -- {rel}"
     try:
         data = read_json(path)
@@ -127,6 +125,10 @@ class Config:
     @property
     def stages(self):
         return self._load("pipeline")["stages"]
+
+    @property
+    def rules(self):
+        return self._load("rules")
 
     @property
     def platforms(self):

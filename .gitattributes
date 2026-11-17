@@ -1,0 +1,8 @@
+# Line endings: stored as LF in the repository, checked out in the platform's
+# native style (CRLF on Windows). The factory reads both.
+* text=auto
+*.py   text
+*.md   text
+*.csv  text
+*.json text
+*.yml  text

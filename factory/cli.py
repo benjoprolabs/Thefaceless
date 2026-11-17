@@ -28,7 +28,24 @@ def build_parser():
     return parser
 
 
+def safe_output_streams():
+    """Never crash because the terminal or an output file can't show a character.
+
+    On Windows, output redirected to a file or pipe uses the ANSI code page
+    (e.g. cp1252), which has no ✔, ⚠ or Jawi letters. Such characters are
+    replaced instead of raising UnicodeEncodeError. UTF-8 output is unaffected;
+    for full Unicode in redirected output on Windows, set PYTHONUTF8=1."""
+    for stream in (sys.stdout, sys.stderr):
+        encoding = (getattr(stream, "encoding", None) or "").lower().replace("-", "")
+        if hasattr(stream, "reconfigure") and not encoding.startswith("utf"):
+            try:
+                stream.reconfigure(errors="replace")
+            except (ValueError, OSError):  # stream closed or not reconfigurable
+                pass
+
+
 def main(argv=None, ctx=None):
+    safe_output_streams()
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

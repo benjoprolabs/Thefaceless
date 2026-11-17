@@ -39,7 +39,7 @@ class TestTemplateOverrides(unittest.TestCase):
         self.assertEqual(find_template(p, "script.md", "qhaze", "ms"), p.templates / "ms" / "script.md")
         brand_tpl = p.brand_dir("qhaze") / "templates" / "ms" / "script.md"
         brand_tpl.parent.mkdir(parents=True)
-        brand_tpl.write_text("brand")
+        brand_tpl.write_text("brand", encoding="utf-8")
         self.assertEqual(find_template(p, "script.md", "qhaze", "ms"), brand_tpl)
 
 

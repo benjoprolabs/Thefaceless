@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.3.4 · **Phase:** 1 (Python CLI, local files)
+**Version:** 0.4.0 · **Phase:** 2, M0 Foundations (Python CLI, local files)
 
 ---
 
@@ -62,8 +62,11 @@ Visual Production → Video Editing → Quality Control → Publishing → Analy
 
 **Stage gates.** Every stage template ends with a `## Stage checklist` of `- [ ]` items.
 `advance` refuses to move a project forward until every box in the current stage's
-Markdown files is ticked. `--force` overrides it, and the override is recorded in the
-project history and shown on the dashboard.
+Markdown files is ticked **and** the stage's automated checks (`factory/core/checks.py`) report
+no FAIL findings (since v0.4.0: script length and empty scenes at Script; claims missing from the
+fact check at Fact Checking). `check P` shows them. `--force` overrides both; the override and the
+skipped finding codes are recorded in the project history and shown on the dashboard.
+`back P` moves a project back one stage (recorded; files unchanged).
 
 Subtitles are part of the Edit stage (captions checklist) and Publishing (caption upload)
 in this workflow.
@@ -158,13 +161,15 @@ A new brand or language can restyle any template without code changes.
 ```
 factory/
 ├── __main__.py          python -m factory
-├── cli.py               Builds the parser from MODULES; validates --lang; prints errors and warnings
+├── cli.py               Builds the parser from MODULES; validates --brand/--lang/--division; safe output encoding; prints errors and warnings
 ├── core/
 │   ├── errors.py        FactoryError + plain-language descriptions of file-system errors
 │   ├── config.py        Paths, Config (cached, shape-checked JSON settings), Context (+ warnings)
 │   ├── files.py         Encoding-tolerant text/JSON reading, Excel-tolerant CSV, slugify, checklists
 │   ├── templates.py     {{placeholder}} rendering, override lookup, standard CSV columns
 │   ├── projects.py      Project model, damaged-project detection, iter_projects, find_project
+│   ├── checks.py        Findings (FAIL/WARN/INFO) and per-stage check registry used by gates and `check`
+│   ├── migrate.py       Project format versions; add-only upgrade steps (`migrate`)
 │   ├── options.py       Shared CLI options and validation (brand, language, division, format)
 │   └── validation.py    Platform, URL, date and number validation
 └── modules/             Modules 1–9 (one file each)
@@ -217,7 +222,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (126 tests, < 2 s, no network).
+`python -m unittest discover -s tests -v` (161 tests, < 3 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
 
 | File | Covers |
 |------|--------|
@@ -229,14 +234,21 @@ factory/
 | `test_compat_errors.py` | `--idea`/`--lang` conflicts; friendly permission/file errors (simulated, plus a real read-only test that runs for non-root users); Python 3.9/3.10 grammar, newer-API scan, stdlib-only imports, version guard |
 | `test_hardening.py` | file encodings, broken settings files, incomplete/mistyped `project.json`, copied/misplaced/duplicate projects, analytics and shot-list column recovery, removed leftovers |
 | `test_remaining_fixes.py` | stage gates with deleted folders/files/checklists, `--brand`/`--division` validation, ID generation (accents, Jawi, suffixes, duplicates), EN/MS same-title IDs, `ideas unlink` |
+| `test_m0_foundations.py` | checks framework, gates using checks, `check`, `back`, `rules.json`, format versions and `migrate` (checksum safety), path display, output encoding, CRLF files, guards for encodings, CI and excluded features |
 
 ### Python version support
 
-| Version | Status |
+Verified by free GitHub Actions CI (`.github/workflows/tests.yml`) on every pull request:
+
+| Environment | Status |
 |---|---|
-| 3.11, 3.12, 3.13 | Full test suite passes |
-| 3.9, 3.10 | Supported by design and statically checked (3.9/3.10 grammar, no newer standard-library APIs, stdlib only); **not yet run**. Interpreters were not available in the build environment |
-| < 3.9 | Not supported; clear message at start-up |
+| Ubuntu · Python 3.10, 3.11, 3.12, 3.13 | Full test suite passes |
+| Ubuntu 24.04 · Python 3.9 | Full test suite passes (3.9 is end-of-life and has no build for the newer `ubuntu-latest` image, so it runs on 24.04) |
+| Windows · Python 3.13 | Full test suite passes (default file encoding cp1252; one Unix-permission test is skipped by design) |
+| macOS · Python 3.13 | Full test suite passes |
+| Ubuntu · Python 3.13 with a non-UTF-8 locale | Full test suite passes (guards against encoding regressions) |
+| Ubuntu · Python 3.14 | Informational job (doesn't block merging); passes |
+| Python < 3.9 | Not supported; clear message at start-up |
 
 ---
 

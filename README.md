@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 1 of 6 complete (v0.3.4): Core System & Foundation. Next: Phase 2, Content Production Engine (awaiting approval). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 2 (Content Production Engine) in progress: M0 Foundations (v0.4.0). Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -20,9 +20,13 @@ no database, no login and no paid services.
 
 **Requirements:** Python 3.9+ and Git. No packages to install.
 
-Tested on Python 3.11, 3.12 and 3.13. The code is written for 3.9+ and checked automatically
-against the 3.9/3.10 grammar, but it has **not yet been run on 3.9 or 3.10**. Older Pythons get a
+Automated tests run on free GitHub Actions for every pull request: Python 3.9–3.13 on Linux,
+and Python 3.13 on Windows and macOS (see the repository's **Actions** tab). Older Pythons get a
 clear "needs Python 3.9 or newer" message.
+
+**Windows:** everything works in Command Prompt and PowerShell (`python -m factory ...`). If you
+redirect output to a file and want symbols such as ✔ or Jawi text preserved, set `PYTHONUTF8=1`
+first; otherwise those characters are written as `?`.
 
 ```bash
 git clone https://github.com/benjoprolabs/Thefaceless.git
@@ -68,7 +72,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 | 3 Idea Manager | `ideas [--lang en\|ms] [--division ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` · `ideas unlink EN-002` (after its project was deleted) |
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
-| 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `advance P [--force]` |
+| 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `check P [--stage S] [--all]` · `advance P [--force]` · `back P` · `migrate [--apply]` |
 | 7 Publishing Manager | `publish` · `publish record P --platform youtube --url https://youtu.be/...` |
 | 8 Analytics | `analytics add P --platform youtube --views 1200 --likes 80 ...` · `analytics report` |
 | 9 Asset Manager | `assets` · `assets add FILE --type music --source "..." --license "..."` · `assets check` |
@@ -106,7 +110,21 @@ docs/            Architecture
 python3 -m unittest discover -s tests -v
 ```
 
-126 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+161 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+
+## Stage gates and automated checks
+
+A stage completes (`advance`) only when its checklist is ticked **and** its automated checks have
+no FAIL findings, for example an empty scene or a script outside the format's length.
+`check P` lists everything for the current stage (`--stage S` for another, `--all` for every stage).
+`--force` still overrides and is recorded with the findings it skipped. `back P` returns a project
+to the previous stage without changing its files. Thresholds are in `config/rules.json`.
+
+## Upgrading older projects
+
+Projects record their file format (`schema_version`). Phase 1 projects are format 1 and keep working.
+`python3 -m factory migrate` previews any upgrade; `migrate --apply` performs it. Upgrades only add
+missing files and update the format number. They never overwrite or delete your content.
 
 ## Editing CSV files in Excel
 

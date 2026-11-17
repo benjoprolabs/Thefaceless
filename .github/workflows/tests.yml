@@ -1,0 +1,64 @@
+# Free GitHub Actions CI for QHAZE Faceless Content Factory.
+# - Standard GitHub-hosted runners only (free for public repositories).
+# - No secrets, no paid services, read-only repository access.
+# - The factory itself never needs the internet; CI only runs the test suite.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}${{ matrix.experimental && ' (informational)' || '' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    # Informational jobs (newest Python) are reported but never block a merge.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Python 3.9 is end-of-life and has no build for ubuntu-latest (26.04),
+          # so it runs on the still-supported ubuntu-24.04 runner (also free).
+          - { os: ubuntu-24.04,   python: "3.9",  experimental: false }
+          - { os: ubuntu-latest,  python: "3.10", experimental: false }
+          - { os: ubuntu-latest,  python: "3.11", experimental: false }
+          - { os: ubuntu-latest,  python: "3.12", experimental: false }
+          - { os: ubuntu-latest,  python: "3.13", experimental: false }
+          - { os: windows-latest, python: "3.13", experimental: false }
+          - { os: macos-latest,   python: "3.13", experimental: false }
+          - { os: ubuntu-latest,  python: "3.14", experimental: true }
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+
+      - name: Show environment
+        run: python -c "import locale, platform, sys; print(platform.platform()); print(sys.version); print('default file encoding:', locale.getpreferredencoding(False))"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      # Windows-style check on Linux: no UTF-8 default for files or output,
+      # so any missing encoding= or non-encodable output fails here.
+      - name: Run tests with a non-UTF-8 locale
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
+        env:
+          PYTHONUTF8: "0"
+          PYTHONCOERCECLOCALE: "0"
+          LC_ALL: C
+          LANG: C
+        run: python -m unittest discover -s tests

@@ -8,13 +8,16 @@ import shutil
 import unicodedata
 
 from factory.core.config import FactoryError
-from factory.core.errors import describe_os_error
+from factory.core.checks import FAIL, WARN, failures, format_finding, run_checks
+from factory.core.errors import describe_os_error, display_path
 from factory.core.files import has_checklist, read_text, title_slug, today, unchecked_items
 from factory.core.options import (add_brand, add_division, add_language, brand_id,
                                   check_division, check_format, check_language)
-from factory.core.projects import Project, find_project, iter_projects
+from factory.core import migrate as migrate_mod
+from factory.core.projects import CURRENT_SCHEMA, Project, find_project, iter_projects
 from factory.core.templates import find_template, render_template
 from factory.modules import ideas as ideas_mod
+from factory.modules import scripts as _scripts  # noqa: F401  (registers the script checks)
 
 
 def template_values(ctx, brand, language, division, fmt, seconds, title, project_id, idea_id, created):
@@ -62,7 +65,7 @@ def new_project_id(ctx, brand, language, title, created):
             # A folder with this ID exists but isn't a readable project (damaged or
             # duplicated). Its title is unknown, so refuse rather than guess.
             raise FactoryError(f"A project folder with the ID {candidate} already exists but can't be read: "
-                               f"{taken[0].relative_to(ctx.paths.root)}. Fix or remove it first "
+                               f"{display_path(taken[0], ctx.paths.root)}. Fix or remove it first "
                                "(see the warnings from: python -m factory status)")
     raise FactoryError("Too many projects with similar titles today; choose a different title")
 
@@ -84,12 +87,13 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
     project_id = new_project_id(ctx, brand, language, title, created)
     folder = ctx.paths.division_dir(brand, language, division) / project_id
     if folder.exists():
-        raise FactoryError(f"Folder already exists: {folder.relative_to(ctx.paths.root)}")
+        raise FactoryError(f"Folder already exists: {display_path(folder, ctx.paths.root)}")
 
     values = template_values(ctx, brand, language, division, fmt, seconds, title,
                              project_id, idea_id, created)
     first = ctx.config.stages[0]["id"]
     project = Project(folder, {
+        "schema_version": CURRENT_SCHEMA,
         "id": project_id, "title": title, "brand": brand, "language": language,
         "division": division, "format": fmt, "target_seconds": seconds,
         "idea_id": idea_id,
@@ -118,7 +122,7 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
                 f"Project {project_id} was created, but the idea list could not be updated.\n"
                 f"{describe_os_error(e, ctx.paths.root)}\n"
                 f"  Then set {idea_id} to status 'in_production' and project_id '{project_id}' "
-                f"in {ctx.paths.ideas_csv(brand, language).relative_to(ctx.paths.root)}") from None
+                f"in {display_path(ctx.paths.ideas_csv(brand, language), ctx.paths.root)}") from None
     return project
 
 
@@ -150,23 +154,51 @@ def stage_blockers(ctx, project):
     return blockers
 
 
+def gate_problems(ctx, project):
+    """Everything that stops the current stage from completing:
+    (unticked/missing checklist items, FAIL findings from automated checks)."""
+    return stage_blockers(ctx, project), failures(run_checks(ctx, project))
+
+
 def advance(ctx, project, force=False, day=None):
     stages = ctx.config.stages
     index = ctx.config.stage_index(project.stage)
     if index == len(stages) - 1:
         raise FactoryError("Project is already at the last stage (Analytics).")
-    blockers = stage_blockers(ctx, project)
-    if blockers and not force:
-        raise FactoryError("Stage checklist not complete:\n  - " + "\n  - ".join(blockers)
-                           + "\nTick the boxes, or use --force.")
+    blockers, fails = gate_problems(ctx, project)
+    if (blockers or fails) and not force:
+        parts = []
+        if blockers:
+            parts.append("Stage checklist not complete:\n  - " + "\n  - ".join(blockers))
+        if fails:
+            parts.append("Automated checks failed:\n  - " + "\n  - ".join(format_finding(f) for f in fails))
+        fix = "Tick the boxes" if not fails else ("Fix the FAIL findings" if not blockers
+                                                   else "Tick the boxes and fix the FAIL findings")
+        raise FactoryError("\n".join(parts) + f"\n{fix} (details: python -m factory check {project.id}), "
+                           "or use --force.")
     new_stage = stages[index + 1]["id"]
     project.meta["stage"] = new_stage
     entry = {"stage": new_stage, "date": day or today()}
-    if blockers:
+    if blockers or fails:
         entry["forced"] = True
+    if fails:
+        entry["forced_findings"] = sorted({f.code for f in fails})
     project.meta["history"].append(entry)
     project.save()
     return new_stage
+
+
+def back(ctx, project, day=None):
+    """Move a project back one stage (e.g. to fix the script after QC).
+    Nothing in the project folder is changed; the step is recorded in history."""
+    index = ctx.config.stage_index(project.stage)
+    if index == 0:
+        raise FactoryError("Project is already at the first stage (Research).")
+    previous = ctx.config.stages[index - 1]["id"]
+    project.meta["history"].append({"stage": previous, "date": day or today(), "back_from": project.stage})
+    project.meta["stage"] = previous
+    project.save()
+    return previous
 
 
 # ---------------------------------------------------------------- commands
@@ -206,7 +238,7 @@ def cmd_new(args, ctx):
         raise FactoryError("Give a title with --lang and --division, or use --idea IDEA-ID")
     project = create_project(ctx, title, language, division, fmt or "short", brand=brand,
                              seconds=args.seconds, idea_id=args.idea or "")
-    print(f"Created: {project.folder.relative_to(ctx.paths.root)}")
+    print(f"Created: {display_path(project.folder, ctx.paths.root)}")
     print("Next: fill in 01_research/research.md, then: python -m factory advance " + project.id)
     return 0
 
@@ -230,7 +262,7 @@ def cmd_show(args, ctx):
     p = find_project(ctx, args.project)
     m = p.meta
     print(f"{m['title']}  [{m['id']}]")
-    print(f"  Folder   : {p.folder.relative_to(ctx.paths.root)}")
+    print(f"  Folder   : {display_path(p.folder, ctx.paths.root)}")
     print(f"  Brand    : {m['brand']}   Language: {m['language']}   Division: {m['division']}")
     print(f"  Format   : {m['format']}, target {m['target_seconds']} s")
     print("  Workflow :")
@@ -241,8 +273,62 @@ def cmd_show(args, ctx):
     blockers = stage_blockers(ctx, p)
     if blockers:
         print(f"  Open checklist items in this stage: {len(blockers)}")
+    findings = run_checks(ctx, p)
+    if findings:
+        fails = sum(f.level == FAIL for f in findings)
+        warns = sum(f.level == WARN for f in findings)
+        print(f"  Automated checks: {fails} FAIL, {warns} WARN (details: python -m factory check {p.id})")
     for pub in m.get("publications", []):
         print(f"  Published: {pub['platform']} {pub['date']} {pub['url']}")
+    return 0
+
+
+def cmd_check(args, ctx):
+    p = find_project(ctx, args.project)
+    stages = [s["id"] for s in ctx.config.stages] if args.all else [args.stage or p.stage]
+    any_fail = False
+    for stage_id in stages:
+        label = ctx.config.stage(stage_id)["label"]
+        findings = run_checks(ctx, p, stage_id)
+        current = stage_id == p.stage
+        blockers = stage_blockers(ctx, p) if current else []
+        if args.all and not findings and not blockers:
+            continue
+        print(f"{label}{' (current stage)' if current else ''}:")
+        for item in blockers:
+            print(f"  CHECKLIST {item}")
+        for f in findings:
+            print(f"  {format_finding(f)}")
+        if not findings and not blockers:
+            print("  no problems found")
+        any_fail = any_fail or bool(failures(findings)) or bool(blockers)
+    if args.all and not any_fail:
+        print("No FAIL findings in any stage.")
+    return 1 if any_fail else 0
+
+
+def cmd_migrate(args, ctx):
+    brand = brand_id(args, ctx)
+    results = migrate_mod.apply(ctx, brand) if args.apply else migrate_mod.plan(ctx, brand)
+    if not results:
+        print(f"All projects are up to date (format {CURRENT_SCHEMA}).")
+        return 0
+    verb = "Upgraded" if args.apply else "Would upgrade"
+    for project, version, actions in results:
+        print(f"{verb} {project.id} (format {version} → {CURRENT_SCHEMA}):")
+        for action in actions:
+            print(f"  - {action}")
+    if not args.apply:
+        print("Preview only: nothing was changed. Run again with --apply to upgrade. "
+              "Existing files are never overwritten.")
+    return 0
+
+
+def cmd_back(args, ctx):
+    p = find_project(ctx, args.project)
+    old = p.stage
+    new_stage = back(ctx, p)
+    print(f"{p.id}: {ctx.config.stage(old)['label']} → back to {ctx.config.stage(new_stage)['label']}")
     return 0
 
 
@@ -278,5 +364,21 @@ def register(sub):
 
     ad = sub.add_parser("advance", help="Production Manager: move project to next stage")
     ad.add_argument("project")
-    ad.add_argument("--force", action="store_true", help="advance even with unticked checklist items")
+    ad.add_argument("--force", action="store_true",
+                    help="advance even with unticked checklist items or FAIL findings (recorded)")
     ad.set_defaults(func=cmd_advance)
+
+    ck = sub.add_parser("check", help="Production Manager: automated checks and checklist for a project")
+    ck.add_argument("project")
+    ck.add_argument("--stage", help="check another stage instead of the current one")
+    ck.add_argument("--all", action="store_true", help="check every stage")
+    ck.set_defaults(func=cmd_check)
+
+    bk = sub.add_parser("back", help="Production Manager: move a project back one stage (recorded)")
+    bk.add_argument("project")
+    bk.set_defaults(func=cmd_back)
+
+    mg = sub.add_parser("migrate", help="Production Manager: upgrade older projects to the current format")
+    add_brand(mg)
+    mg.add_argument("--apply", action="store_true", help="make the changes (default: preview only)")
+    mg.set_defaults(func=cmd_migrate)
