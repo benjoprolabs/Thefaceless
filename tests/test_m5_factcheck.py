@@ -143,7 +143,11 @@ class TestSync(Base):
         after = self.fc().read_text(encoding="utf-8")
         for line in edited:
             self.assertIn(line, after)
-        self.assertEqual(after.replace("| F2  | Their blood is blue. | | | |\n", "").encode("utf-8"), before)
+        # Byte-for-byte: only the new row was added, with the file's own line ending
+        # (the file has CRLF endings when written in text mode on Windows).
+        newline = b"\r\n" if b"\r\n" in before else b"\n"
+        added = "| F2  | Their blood is blue. | | | |".encode("utf-8") + newline
+        self.assertEqual(self.fc().read_bytes().replace(added, b""), before)
         rows = factcheck.parse_rows(after)
         self.assertEqual([r["ref"] for r in rows], [1, 3, 2])  # added after the last claim row
 
