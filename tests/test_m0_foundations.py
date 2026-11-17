@@ -234,9 +234,9 @@ class TestRules(Base):
         self.assertIn("SCRIPT_TARGET", codes_with_tolerance(1))
 
     def test_broken_rules_json(self):
+        self.to_stage("script")  # reach the stage first: Planning checks also read rules.json (M3)
         (self.tmp / "config/rules.json").write_text("{}", encoding="utf-8")
         self.ctx.config._cache.clear()
-        self.to_stage("script")
         code, out = self.cli("check", "gate-project")
         self.assertEqual(code, 1)
         self.assertIn("config/rules.json has a problem: missing 'script'", out)

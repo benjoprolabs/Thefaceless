@@ -61,6 +61,21 @@ def read_json(path):
     return json.loads(read_text(path))
 
 
+def write_new_text(path, text):
+    """Write a new text file (e.g. from a template) with one native line ending
+    per line. Templates checked out on Windows have CRLF; writing them as-is in
+    text mode would give CR CR LF, so line endings are normalised first."""
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    path.write_text(text, encoding="utf-8")
+
+
+def write_text_exact(path, text):
+    """Rewrite an existing text file keeping its own line endings exactly
+    (no newline translation on any platform)."""
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        f.write(text)
+
+
 def write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

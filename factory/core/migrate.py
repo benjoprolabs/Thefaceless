@@ -12,6 +12,7 @@ Safety rules for every step:
 """
 
 from factory.core.errors import display_path
+from factory.core.files import write_new_text
 from factory.core.projects import CURRENT_SCHEMA, iter_projects
 from factory.core.templates import render_template
 
@@ -24,7 +25,7 @@ def add_missing_file(ctx, project, relative_path, template, values, apply):
     if apply:
         target.parent.mkdir(parents=True, exist_ok=True)
         text = render_template(ctx.paths, template, values, project.meta.get("brand"), project.language)
-        target.write_text(text, encoding="utf-8")
+        write_new_text(target, text)
     return [f"add {display_path(target, project.folder)}"]
 
 

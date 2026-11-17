@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 2 (Content Production Engine) in progress: M2 Research Engine (v0.4.2); M0 and M1 complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 2 (Content Production Engine) in progress: M3 Content Planning (v0.4.3); M0–M2 complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -71,6 +71,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 | 2 Niche Manager | `niches` · `niches show <division>` |
 | 3 Idea Manager | `ideas [--lang en\|ms] [--division ...] [--status ...] [--tag ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` · `ideas show ID` · `ideas edit ID [--title] [--division] [--format] [--demand] [--competition] [--effort] [--tags] [--notes]` · `ideas status ID STATUS` · `ideas dupes [--lang]` · `ideas check [--lang]` · `ideas unlink EN-002` (after its project was deleted) |
 | Research Engine | `research sources P` · `research add-source P --title "..." --type study --accessed today [--url URL] [--published] [--publisher] [--reliability 1-5] [--notes]` · `research verify P S1 verified` · `research check P` · `research copy-sources P --from Q` |
+| Content Planning | `plan check P` · `plan set-date P YYYY-MM-DD` · `plan calendar [--lang] [--division] [--from] [--to]` |
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
 | 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `check P [--stage S] [--all]` · `advance P [--force]` · `back P` · `migrate [--apply]` |
@@ -118,7 +119,7 @@ original files; existing `research.md` files are never modified automatically.
 python3 -m unittest discover -s tests -v
 ```
 
-220 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+237 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
 
 ## Research sources
 
@@ -136,6 +137,15 @@ verification status, reliability, notes). Links are never opened; the factory wo
 
 Projects created before v0.4.2 can get an empty `sources.csv` with `migrate --apply`; their
 existing `research.md` is never changed.
+
+## Content plans
+
+`02_planning/plan.md` is checked when a project leaves the Planning stage: it needs a hook,
+at least 3 numbered outline points, a primary keyword and a target publish date (YYYY-MM-DD).
+`plan check P` shows the result. `plan set-date P 2026-12-01` stores the date in `project.json`
+(`planned_publish`) and changes only the date line in `plan.md`. `plan calendar` lists planned
+dates across projects and warns when one channel (language) has more than 2 videos on a day.
+An outline that doesn't fit the format's length gets a warning. Limits are in `config/rules.json`.
 
 ## Idea statuses
 

@@ -5,5 +5,12 @@
   },
   "ideas": {
     "duplicate_threshold": 0.85
+  },
+  "planning": {
+    "seconds_per_outline_point": {
+      "short": 12,
+      "long": 90
+    },
+    "max_videos_per_channel_per_day": 2
   }
 }
