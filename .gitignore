@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+
+# Large media: keep out of git (store in cloud drive / external disk)
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+*.mkv

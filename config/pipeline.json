@@ -1,0 +1,12 @@
+{
+  "stages": [
+    {"id": "research",  "folder": "01_research",  "label": "Research & idea",      "templates": ["idea.md"]},
+    {"id": "script",    "folder": "02_script",    "label": "Script",               "templates": ["script.md"]},
+    {"id": "voice",     "folder": "03_voice",     "label": "AI voice-over",        "templates": ["voice.md"]},
+    {"id": "visuals",   "folder": "04_visuals",   "label": "Visuals & footage",    "templates": ["shotlist.csv"]},
+    {"id": "edit",      "folder": "05_edit",      "label": "Video editing",        "templates": ["edit.md"]},
+    {"id": "subtitles", "folder": "06_subtitles", "label": "Subtitles",            "templates": []},
+    {"id": "export",    "folder": "07_export",    "label": "Export & publishing",  "templates": ["publish.md"]},
+    {"id": "published", "folder": null,           "label": "Published (tracking)", "templates": []}
+  ]
+}

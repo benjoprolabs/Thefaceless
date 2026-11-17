@@ -1,0 +1,7 @@
+scene,start_sec,end_sec,narration_summary,visual_type,visual_description,source,license,file,status
+1,0,5,Hook: three hearts and one stops,stock_footage,Close-up of octopus on sea floor,,,,todo
+2,5,8,Why three?,animation,Simple octopus body diagram,self-made,own,,todo
+3,8,17,Two gill hearts,animation,Diagram highlighting two branchial hearts,self-made,own,,todo
+4,17,26,Main heart feeds the body,animation,Diagram with arrows from central heart to arms,self-made,own,,todo
+5,26,40,Blue blood; heart pauses when swimming,stock_footage,Octopus swimming then crawling; blue blood graphic,,,,todo
+6,40,48,Payoff and CTA,stock_footage,Octopus hiding in crevice + channel logo,,,,todo
