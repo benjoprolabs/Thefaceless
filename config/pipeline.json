@@ -2,7 +2,7 @@
   "stages": [
     {"id": "research",  "folder": "01_research",  "label": "Research",         "module": "Research Engine",     "templates": ["research.md", "sources.csv"]},
     {"id": "planning",  "folder": "02_planning",  "label": "Content Planning", "module": "Content Planning",    "templates": ["plan.md"]},
-    {"id": "script",    "folder": "03_script",    "label": "Script Writing",   "module": "Script Studio",       "templates": ["script.md"]},
+    {"id": "script",    "folder": "03_script",    "label": "Script Writing",   "module": "Script Writing Engine","templates": ["script.md"]},
     {"id": "factcheck", "folder": "04_factcheck", "label": "Fact Checking",    "module": "Script Studio",       "templates": ["factcheck.md"]},
     {"id": "voice",     "folder": "05_voice",     "label": "Voice-over",       "module": "Production Manager",  "templates": ["voice.md"]},
     {"id": "visuals",   "folder": "06_visuals",   "label": "Visual Production","module": "Visual Library",      "templates": ["visuals.md", "shotlist.csv"]},
