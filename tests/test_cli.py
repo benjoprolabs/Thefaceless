@@ -48,7 +48,7 @@ class TestCLIWorkflow(unittest.TestCase):
         self.assertNotIn("voice", commands)
         self.assertEqual(sorted(commands), sorted([
             "dashboard", "niches", "ideas", "script", "library", "new", "status",
-            "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets", "research"]))
+            "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets", "research", "plan"]))
 
     def test_errors_are_friendly(self):
         self.assertIn("not found", self.bad("new", "--idea", "EN-999"))
@@ -69,7 +69,15 @@ class TestCLIWorkflow(unittest.TestCase):
         self.ok("research", "add-source", pid, "--title", "Spotlight effect study", "--type", "study",
                 "--url", "https://psycnet.apa.org/record/2000-02655-002", "--accessed", "today")
         self.ok("advance", pid)
-        tick_all(p.folder / "02_planning/plan.md")
+        plan = p.folder / "02_planning/plan.md"
+        tick_all(plan)
+        self.assertIn("PLAN_HOOK", self.bad("advance", pid))  # M3 gate: the plan must be filled in
+        text = plan.read_text(encoding="utf-8")
+        text = text.replace("## Angle / hook\n", "## Angle / hook\nNobody notices you as much as you think.\n")
+        text = text.replace("2.\n3.\n", "2. What the studies found\n3. Why it happens\n")
+        text = text.replace("- **Primary keyword:**", "- **Primary keyword:** spotlight effect")
+        plan.write_text(text, encoding="utf-8")
+        self.ok("plan", "set-date", pid, "2026-12-01")
         self.ok("advance", pid)
 
         # 3 Script → 4 Fact check
