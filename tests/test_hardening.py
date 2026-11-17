@@ -18,7 +18,7 @@ from factory.core.files import read_csv, read_text
 from factory.core.projects import find_project, iter_projects
 from factory.modules import analytics, publishing, scripts
 from factory.modules.production import advance, create_project, stage_blockers
-from tests.helpers import make_sandbox, remove_sandbox, run_cli
+from tests.helpers import add_source, make_sandbox, remove_sandbox, run_cli
 
 
 class Base(unittest.TestCase):
@@ -60,6 +60,7 @@ class TestTextEncodings(Base):
         self.assertIn("research.md: Sources checked", out)   # gate still works
         self.write_research(b"# Research caf\xe9\n- [x] Sources checked\n")
         self.assertEqual(stage_blockers(self.ctx, self.p), [])
+        add_source(self.ctx, self.p)  # M2: a source is required to leave Research
         code, out = self.cli("advance", "main-project")
         self.assertEqual(code, 0, out)
 

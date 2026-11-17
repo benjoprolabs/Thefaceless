@@ -26,7 +26,7 @@ from factory.core.config import ROOT, FactoryError
 from factory.core.errors import display_path
 from factory.core.projects import CURRENT_SCHEMA, find_project, iter_projects
 from factory.modules.production import advance, back, create_project, gate_problems
-from tests.helpers import make_sandbox, remove_sandbox, run_cli, tick_all
+from tests.helpers import add_source, make_sandbox, remove_sandbox, run_cli, tick_all
 
 GOOD_SCRIPT = """# Script
 ## [SCENE 1] Hook
@@ -78,7 +78,7 @@ class TestChecksFramework(unittest.TestCase):
         def sample(ctx, project):
             return [Finding(INFO, "I1", "info"), Finding(WARN, "W1", "warn"), Finding(FAIL, "F1", "fail", "a.md")]
         checks.register("research")(sample)  # registering twice has no effect
-        found = run_checks(self.ctx, self.p)
+        found = [f for f in run_checks(self.ctx, self.p) if f.code in ("I1", "W1", "F1")]  # ignore M2 source checks
         self.assertEqual([f.level for f in found], [FAIL, WARN, INFO])
         self.assertEqual([f.code for f in failures(found)], ["F1"])
         self.assertEqual(format_finding(found[0]), "FAIL F1 [a.md]: fail")
@@ -168,6 +168,7 @@ class TestCheckCommand(Base):
         self.assertIn("Research (current stage):", out)
         self.assertIn("CHECKLIST research.md:", out)
         tick_all(self.p.folder / "01_research/research.md")
+        add_source(self.ctx, self.p)  # M2: a project needs a source to leave Research
         code, out = self.cli("check", "gate-project")
         self.assertEqual(code, 0, out)
         self.assertIn("no problems found", out)
@@ -212,6 +213,7 @@ class TestBack(Base):
         self.to_stage("planning")
         back(self.ctx, self.p)
         tick_all(self.p.folder / "01_research/research.md")
+        add_source(self.ctx, self.p)
         self.assertEqual(advance(self.ctx, self.p), "planning")
 
 
@@ -287,9 +289,11 @@ class TestSchemaAndMigrate(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("Upgraded", out)
         after = checksums(self.tmp)
-        changed = sorted(k for k in after if before.get(k) != after[k])
+        changed = sorted(k for k in before if before[k] != after.get(k))
         self.assertTrue(all(k.endswith("/project.json") for k in changed), changed)
-        self.assertEqual(sorted(before), sorted(after))  # no files added or removed in v2
+        added = sorted(k for k in after if k not in before)  # v3 (M2) adds only sources.csv
+        self.assertEqual(added, sorted(f"{p.folder.relative_to(self.tmp).as_posix()}/01_research/sources.csv"
+                                       for p in iter_projects(self.ctx)))
         for p in iter_projects(self.ctx):
             new = json.loads((p.folder / "project.json").read_text(encoding="utf-8"))
             self.assertEqual(new.pop("schema_version"), CURRENT_SCHEMA)
@@ -385,6 +389,7 @@ class TestCrossPlatform(Base):
         self.assertIn("research.md: At least 2 credible sources recorded", out)
         self.assertNotIn("\r", out)
         tick_all(research)
+        add_source(self.ctx, self.p)
         self.assertEqual(advance(self.ctx, self.p), "planning")
         self.to_stage("script")
         (self.p.folder / "03_script/script.md").write_bytes(GOOD_SCRIPT.replace("\n", "\r\n").encode("utf-8"))

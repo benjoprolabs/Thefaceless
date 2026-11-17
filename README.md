@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 2 (Content Production Engine) in progress: M1 Idea Management (v0.4.1); M0 Foundations complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 2 (Content Production Engine) in progress: M2 Research Engine (v0.4.2); M0 and M1 complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -70,6 +70,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 | 1 Dashboard | `dashboard` |
 | 2 Niche Manager | `niches` · `niches show <division>` |
 | 3 Idea Manager | `ideas [--lang en\|ms] [--division ...] [--status ...] [--tag ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` · `ideas show ID` · `ideas edit ID [--title] [--division] [--format] [--demand] [--competition] [--effort] [--tags] [--notes]` · `ideas status ID STATUS` · `ideas dupes [--lang]` · `ideas check [--lang]` · `ideas unlink EN-002` (after its project was deleted) |
+| Research Engine | `research sources P` · `research add-source P --title "..." --type study --accessed today [--url URL] [--published] [--publisher] [--reliability 1-5] [--notes]` · `research verify P S1 verified` · `research check P` · `research copy-sources P --from Q` |
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
 | 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `check P [--stage S] [--all]` · `advance P [--force]` · `back P` · `migrate [--apply]` |
@@ -104,13 +105,37 @@ docs/            Architecture
 - **`brands/qhaze/ms/what-if-science/2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung/`**: a new
   Malay project at the Research stage, created from idea `MS-001` with the Malay script template.
 
+**Sample states under M2 (intentional):** both samples were created before v0.4.2 and keep their
+original files; existing `research.md` files are never modified automatically.
+- The **Malay sample** is still at Research and has no `sources.csv`, so `check` correctly reports
+  **FAIL** (`SOURCES_MISSING`): it can't leave Research until a source is added.
+- The **English sample** is already past Research; its sources are still recorded in its
+  `research.md` table rather than in `sources.csv`, so `check` correctly reports a **WARN**.
+
 ## Running tests
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-198 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+220 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+
+## Research sources
+
+Each project keeps detailed notes in `01_research/research.md` and a structured source list in
+`01_research/sources.csv` (title, URL, publisher, type, publication date, access date,
+verification status, reliability, notes). Links are never opened; the factory works offline.
+
+- Add: `research add-source P --title "..." --type study --accessed today --url https://...`
+  (books or interviews: leave out `--url`). Types: primary, official, study, secondary, news, book, other.
+- Verify: `research verify P S1 verified` (unverified, verified, disputed, outdated).
+- Check: `research check P`. A project can't leave the Research stage without at least one valid source.
+  Technology & AI sources older than 90 days get a warning (`config/divisions.json`).
+- Reuse: `research copy-sources P --from Q` copies another project's sources without duplicates,
+  keeping their verification status and dates exactly as they were.
+
+Projects created before v0.4.2 can get an empty `sources.csv` with `migrate --apply`; their
+existing `research.md` is never changed.
 
 ## Idea statuses
 

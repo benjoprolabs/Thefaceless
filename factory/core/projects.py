@@ -20,7 +20,7 @@ REQUIRED_FIELDS = ("id", "title", "language", "division", "format", "stage", "hi
 # Project file format version. 1 = Phase 1 (no "schema_version" field).
 # Raise it when a milestone needs new project files, and add a step to
 # factory/core/migrate.py that creates them for older projects.
-CURRENT_SCHEMA = 2
+CURRENT_SCHEMA = 3
 
 
 class Project:

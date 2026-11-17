@@ -33,9 +33,15 @@ def _to_v2(ctx, project, apply):
     return []
 
 
+def _to_v3(ctx, project, apply):
+    """v3 (M2 Research Engine): structured source list 01_research/sources.csv."""
+    return add_missing_file(ctx, project, "01_research/sources.csv", "sources.csv", {}, apply)
+
+
 # version reached -> (description, step function)
 STEPS = {
     2: ("record project format version", _to_v2),
+    3: ("add 01_research/sources.csv", _to_v3),
 }
 assert max(STEPS) == CURRENT_SCHEMA, "every format version needs a migration step"
 

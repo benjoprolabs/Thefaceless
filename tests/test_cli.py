@@ -48,7 +48,7 @@ class TestCLIWorkflow(unittest.TestCase):
         self.assertNotIn("voice", commands)
         self.assertEqual(sorted(commands), sorted([
             "dashboard", "niches", "ideas", "script", "library", "new", "status",
-            "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets"]))
+            "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets", "research"]))
 
     def test_errors_are_friendly(self):
         self.assertIn("not found", self.bad("new", "--idea", "EN-999"))
@@ -65,6 +65,9 @@ class TestCLIWorkflow(unittest.TestCase):
         # 1 Research → 2 Planning
         self.assertIn("checklist not complete", self.bad("advance", pid))
         tick_all(p.folder / "01_research/research.md")
+        self.assertIn("SOURCES_EMPTY", self.bad("advance", pid))  # M2 gate: new projects start with an empty sources.csv
+        self.ok("research", "add-source", pid, "--title", "Spotlight effect study", "--type", "study",
+                "--url", "https://psycnet.apa.org/record/2000-02655-002", "--accessed", "today")
         self.ok("advance", pid)
         tick_all(p.folder / "02_planning/plan.md")
         self.ok("advance", pid)

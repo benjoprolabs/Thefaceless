@@ -17,10 +17,15 @@
 3.
 
 ## Sources
-<!-- Every fact used in the script must come from here. Prefer primary sources. -->
-| # | Source | URL | Accessed | Notes |
-|---|--------|-----|----------|-------|
-| 1 |        |     |          |       |
+Sources are tracked in `sources.csv` in this folder (one row per source: title, URL,
+publication date, access date, verification status, notes). Every fact used in the
+script must come from a source there. Prefer primary sources.
+
+Add one with:
+`python -m factory research add-source {{project_id}} --title "..." --url https://... --type study --accessed today`
+
+List them with `python -m factory research sources {{project_id}}`; check them with
+`python -m factory research check {{project_id}}`.
 
 ## Competition check
 | Title | Channel | Views | What we'll do differently |
