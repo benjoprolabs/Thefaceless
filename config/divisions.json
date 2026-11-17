@@ -32,7 +32,8 @@
     "name_ms": "Teknologi & AI",
     "description": "Gadgets, software, AI tools and tech news explained.",
     "visual_style": "tech-motion",
-    "notes": "Tech changes fast: record the date each fact was checked."
+    "notes": "Tech changes fast: record the date each fact was checked.",
+    "source_max_age_days": 90
   },
   "food-cooking": {
     "name": "Food & Cooking",

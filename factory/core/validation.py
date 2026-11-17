@@ -1,4 +1,4 @@
-"""Validation for publishing and analytics input: platforms, URLs, dates, numbers.
+"""Validation of user input: platforms, URLs, dates, numbers.
 
 Platforms and their web domains are defined in config/platforms.json.
 """
@@ -22,11 +22,10 @@ def check_platform(ctx, platform):
     return key
 
 
-def check_url(ctx, url, platform):
-    """The URL must be a full http(s) link on one of the platform's domains."""
+def check_web_url(url, example="https://www.example.org/..."):
+    """A full http(s) link to any website. Returns (url, host). Only the text
+    is checked; the link is never opened (the factory works offline)."""
     url = (url or "").strip()
-    domains = ctx.config.platforms[platform]["domains"]
-    example = f"https://www.{domains[0]}/..."
     if not url or any(c.isspace() for c in url):
         raise FactoryError(f"Invalid URL '{url}'. Paste the full link, e.g. {example}")
     parts = urlsplit(url)
@@ -35,6 +34,25 @@ def check_url(ctx, url, platform):
     host = (parts.hostname or "").lower()
     if not HOSTNAME.match(host):
         raise FactoryError(f"Invalid URL '{url}': '{host or '(empty)'}' is not a valid web address")
+    return url, host
+
+
+def normalise_url(url):
+    """For duplicate detection only: http/https, 'www.', letter case of the
+    host and a trailing '/' are ignored."""
+    parts = urlsplit((url or "").strip())
+    host = (parts.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    path = parts.path.rstrip("/")
+    query = f"?{parts.query}" if parts.query else ""
+    return f"{host}{path}{query}"
+
+
+def check_url(ctx, url, platform):
+    """The URL must be a full http(s) link on one of the platform's domains."""
+    domains = ctx.config.platforms[platform]["domains"]
+    url, host = check_web_url(url, example=f"https://www.{domains[0]}/...")
     if not any(host == d or host.endswith("." + d) for d in domains):
         label = ctx.config.platforms[platform]["label"]
         raise FactoryError(f"URL '{url}' is not a {label} link (expected a domain like "
