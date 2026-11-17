@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.4.2 · **Phase:** 2, M2 Research Engine (Python CLI, local files)
+**Version:** 0.4.3 · **Phase:** 2, M3 Content Planning (Python CLI, local files)
 
 ---
 
@@ -150,6 +150,7 @@ A new brand or language can restyle any template without code changes.
 | 2 | Niche Manager | `modules/niches.py` | `niches`, `niches show` | Divisions, rules, visual style, project counts per language |
 | 3 | Idea Manager | `modules/ideas.py` | `ideas`, `ideas add / show / edit / status / dupes / check / unlink` | Per-language backlog, scoring, status life cycle, tags and notes, duplicate detection, consistency check, idea ↔ project links (published on first publication) |
 | – | Research Engine | `modules/research.py` | `research sources / add-source / verify / check / copy-sources` | Structured source list per project (`sources.csv`), Research-stage checks and gate |
+| – | Content Planning | `modules/planning.py` | `plan check / set-date / calendar` | Reads and checks `plan.md`, `planned_publish`, publishing calendar with per-channel clash warnings |
 | 4 | Script Studio | `modules/scripts.py` | `script check / text / shotlist` | Parse scenes, word count → duration vs format limits, [F#] claim coverage, shot list from scenes |
 | 5 | Visual Library | `modules/library.py` | `library visuals` | Visual style per division |
 | 6 | Production Manager | `modules/production.py` | `new`, `status`, `show`, `advance` | Create projects from templates, stage gates, history |
@@ -224,7 +225,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (220 tests, < 5 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
+`python -m unittest discover -s tests -v` (237 tests, < 6 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
 
 | File | Covers |
 |------|--------|
@@ -239,6 +240,7 @@ factory/
 | `test_m0_foundations.py` | checks framework, gates using checks, `check`, `back`, `rules.json`, format versions and `migrate` (checksum safety), path display, output encoding, CRLF files, guards for encodings, CI and excluded features |
 | `test_m1_ideas.py` | idea status rules, `new --idea` from backlog/shortlisted only, EN-001 sample data, `ideas check` rules, project-side warnings, duplicates (English, Malay, Jawi), edit and locked fields, show/list filters, automatic published, old and Excel-saved files, Phase 1 regression |
 | `test_m2_research.py` | `sources.csv` add/list/verify/check/copy, every Research rule, the Research gate, the three M2 decisions, format 3 and `migrate` |
+| `test_m3_planning.py` | `plan.md` reading, every Planning rule, outline length, `set-date`, calendar filters and clashes, the Planning gate |
 
 ### Python version support
 

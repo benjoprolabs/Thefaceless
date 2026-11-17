@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Approved plan. Done: M0 (v0.4.0), M1 (v0.4.1). In progress: M2 Research Engine (v0.4.2) |
+| **Status** | Approved plan. Done: M0 (v0.4.0), M1 (v0.4.1), M2 (v0.4.2). In progress: M3 Content Planning (v0.4.3) |
 | **Baseline** | Phase 1, v0.3.4 (`main` at `b021dd8`) |
 | **Target** | v0.5.0, Phase 2 complete |
 | **Roadmap** | Phase 2 of 6 (see [ARCHITECTURE.md](ARCHITECTURE.md#8-roadmap-official-approved)) |

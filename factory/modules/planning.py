@@ -196,10 +196,20 @@ def set_date(ctx, project, value):
     updated_plan = False
     if path.exists():
         text = read_text(path)
-        pattern = re.compile(r"(^##\s+Target publish date\s*\n)(.*?)(?=^##\s|\Z)", re.MULTILINE | re.DOTALL | re.IGNORECASE)
-        if pattern.search(text):
-            text = pattern.sub(lambda m: f"{m.group(1)}{value}\n\n", text, count=1)
-            path.write_text(text, encoding="utf-8")
+        heading = re.search(r"^##\s+Target publish date[ \t]*\r?\n", text, re.MULTILINE | re.IGNORECASE)
+        if heading:
+            # Change only the date line (the first non-empty line of the section);
+            # everything else in plan.md stays byte-for-byte the same.
+            start = heading.end()
+            following = re.search(r"^##\s", text[start:], re.MULTILINE)
+            end = start + following.start() if following else len(text)
+            body = text[start:end]
+            line = re.search(r"^[ \t]*(?!<!--)\S[^\r\n]*", body, re.MULTILINE)
+            if line:
+                body = body[:line.start()] + value + body[line.end():]
+            else:
+                body = value + "\n" + body
+            path.write_text(text[:start] + body + text[end:], encoding="utf-8")
             updated_plan = True
     old = project.meta.get("planned_publish", "")
     project.meta["planned_publish"] = value
