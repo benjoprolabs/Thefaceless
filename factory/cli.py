@@ -12,10 +12,10 @@ from factory import __version__
 from factory.core.config import Context, FactoryError
 from factory.core.errors import describe_os_error
 from factory.core.options import check_brand, check_division, check_language
-from factory.modules import (analytics, assets, dashboard, ideas, library, niches,
+from factory.modules import (analytics, assets, dashboard, factcheck, ideas, library, niches,
                              planning, production, publishing, research, scripts)
 
-MODULES = [dashboard, niches, ideas, research, planning, scripts, library, production, publishing,
+MODULES = [dashboard, niches, ideas, research, planning, scripts, factcheck, library, production, publishing,
            analytics, assets]
 
 

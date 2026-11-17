@@ -48,7 +48,8 @@ class TestCLIWorkflow(unittest.TestCase):
         self.assertNotIn("voice", commands)
         self.assertEqual(sorted(commands), sorted([
             "dashboard", "niches", "ideas", "script", "library", "new", "status",
-            "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets", "research", "plan"]))
+            "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets", "research", "plan",
+            "factcheck"]))
 
     def test_errors_are_friendly(self):
         self.assertIn("not found", self.bad("new", "--idea", "EN-999"))
@@ -85,9 +86,19 @@ class TestCLIWorkflow(unittest.TestCase):
         self.assertIn("Claims missing", self.bad("script", "check", pid))
         self.ok("advance", pid)
         fc = p.folder / "04_factcheck/factcheck.md"
-        fc.write_text(fc.read_text(encoding="utf-8").replace("| F1  |                              |",
-                                             "| F1  | brain notices |\n| F2  | twice as many |"), encoding="utf-8")
+        out = self.ok("factcheck", "sync", pid)  # M5: rows pre-filled from the script
+        self.assertIn("Filled blank row(s): F1", out)  # the template's empty F1 row
+        self.assertIn("Added row(s): F2", out)
         tick_all(fc)
+        self.assertIn("FACTCHECK_NO_VERDICT", self.bad("advance", pid))  # M5 gate: verdicts and sources
+        text = fc.read_text(encoding="utf-8")
+        for ref in ("F1", "F2"):
+            text = "\n".join(line.replace(" | | | |", " | S1 | ✅ | |") if line.startswith(f"| {ref} ") else line
+                             for line in text.split("\n"))
+        fc.write_text(text, encoding="utf-8")
+        self.assertIn("FACTCHECK_WEAK_SOURCES", self.bad("factcheck", "check", pid))  # S1 still unverified
+        self.ok("research", "verify", pid, "S1", "verified")
+        self.assertIn("Fact check OK", self.ok("factcheck", "check", pid))
         self.assertIn("OK", self.ok("script", "check", pid))
         self.ok("advance", pid)
 
