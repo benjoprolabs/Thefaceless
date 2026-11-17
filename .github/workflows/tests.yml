@@ -28,7 +28,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest,  python: "3.9",  experimental: false }
+          # Python 3.9 is end-of-life and has no build for ubuntu-latest (26.04),
+          # so it runs on the still-supported ubuntu-24.04 runner (also free).
+          - { os: ubuntu-24.04,   python: "3.9",  experimental: false }
           - { os: ubuntu-latest,  python: "3.10", experimental: false }
           - { os: ubuntu-latest,  python: "3.11", experimental: false }
           - { os: ubuntu-latest,  python: "3.12", experimental: false }
@@ -37,9 +39,9 @@ jobs:
           - { os: macos-latest,   python: "3.13", experimental: false }
           - { os: ubuntu-latest,  python: "3.14", experimental: true }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true

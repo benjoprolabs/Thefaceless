@@ -424,10 +424,9 @@ class TestRegressionGuards(unittest.TestCase):
 
     def test_ci_workflow(self):
         wf = (ROOT / ".github/workflows/tests.yml").read_text(encoding="utf-8")
-        for version in ("3.9", "3.10", "3.11", "3.12", "3.13"):
-            self.assertIn(f'os: ubuntu-latest,  python: "{version}",  experimental: false'
-                          if len(version) == 3 else
-                          f'os: ubuntu-latest,  python: "{version}", experimental: false', wf)
+        self.assertIn('os: ubuntu-24.04,   python: "3.9",  experimental: false', wf)  # no 3.9 on 26.04
+        for version in ("3.10", "3.11", "3.12", "3.13"):
+            self.assertIn(f'os: ubuntu-latest,  python: "{version}", experimental: false', wf)
         self.assertIn('os: windows-latest, python: "3.13", experimental: false', wf)
         self.assertIn('os: macos-latest,   python: "3.13", experimental: false', wf)
         self.assertIn('python: "3.14", experimental: true', wf)
