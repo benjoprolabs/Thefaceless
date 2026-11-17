@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 
 from factory.core.config import FactoryError
+from factory.core.errors import display_path
 from factory.core.files import append_csv, read_csv, today
 
 FIELDS = ["id", "type", "file", "source", "license", "added", "notes"]
@@ -23,7 +24,7 @@ def add_asset(ctx, file, asset_type, source="", license="", notes=""):
         raise FactoryError(f"File not found: {file}")
     dest = ctx.paths.assets / asset_type / src.name
     if dest.exists():
-        raise FactoryError(f"Asset already exists: {dest.relative_to(ctx.paths.root)}")
+        raise FactoryError(f"Asset already exists: {display_path(dest, ctx.paths.root)}")
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest)
     existing = list_assets(ctx)

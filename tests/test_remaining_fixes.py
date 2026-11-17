@@ -57,7 +57,7 @@ class TestGateCannotBeBypassed(Base):
         self.assertIn("visuals.md: file is missing. Restore it or use --force", stage_blockers(self.ctx, self.p))
 
     def test_removed_checklist_section_blocks_advance(self):
-        (self.p.folder / "01_research/research.md").write_text("# Research\nAll done, trust me.\n")
+        (self.p.folder / "01_research/research.md").write_text("# Research\nAll done, trust me.\n", encoding="utf-8")
         self.assertEqual(stage_blockers(self.ctx, self.p),
                          ["research.md: the stage checklist was removed. Restore it or use --force"])
 
@@ -99,9 +99,9 @@ class TestBrandAndDivisionValidation(Base):
 
     def test_disabled_division_for_brand(self):
         brand_json = self.tmp / "brands/qhaze/brand.json"
-        brand = json.loads(brand_json.read_text())
+        brand = json.loads(brand_json.read_text(encoding="utf-8"))
         brand["divisions"].remove("gaming")
-        brand_json.write_text(json.dumps(brand))
+        brand_json.write_text(json.dumps(brand), encoding="utf-8")
         code, out = self.cli("status", "--division", "gaming")
         self.assertEqual(code, 1)
         self.assertIn("Division 'gaming' is not enabled for brand 'qhaze'", out)
@@ -164,11 +164,11 @@ class TestIdGeneration(Base):
 
     def test_damaged_folder_with_same_id_is_never_overwritten(self):
         p = self.new("Fragile")
-        (p.folder / "project.json").write_text("{")
+        (p.folder / "project.json").write_text("{", encoding="utf-8")
         with self.assertRaises(FactoryError) as e:
             self.new("Fragile")
         self.assertIn("already exists but can't be read", str(e.exception))
-        self.assertEqual((p.folder / "project.json").read_text(), "{")
+        self.assertEqual((p.folder / "project.json").read_text(encoding="utf-8"), "{")
 
     def test_empty_title_refused(self):
         with self.assertRaises(FactoryError):
@@ -221,7 +221,7 @@ class TestUnlinkIdea(Base):
         self.assertEqual(self.csv.read_bytes(), before)
 
     def test_refused_while_damaged_folder_exists(self):
-        (self.project.folder / "project.json").write_text("{")
+        (self.project.folder / "project.json").write_text("{", encoding="utf-8")
         code, out = self.cli("ideas", "unlink", "EN-002")
         self.assertEqual(code, 1)
         self.assertIn("still exists", out)

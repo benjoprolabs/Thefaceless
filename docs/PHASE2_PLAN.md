@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Approved plan. Implementation not started |
+| **Status** | Approved plan. In progress: M0 Foundations (v0.4.0) |
 | **Baseline** | Phase 1, v0.3.4 (`main` at `b021dd8`) |
 | **Target** | v0.5.0, Phase 2 complete |
 | **Roadmap** | Phase 2 of 6 (see [ARCHITECTURE.md](ARCHITECTURE.md#8-roadmap-official-approved)) |

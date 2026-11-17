@@ -125,27 +125,27 @@ class TestDamagedProjects(Base):
         self.assertEqual([p.id for p in iter_projects(self.ctx)], [self.good.id])
 
     def test_invalid_json(self):
-        self.bad_json.write_text("{ broken")
+        self.bad_json.write_text("{ broken", encoding="utf-8")
         self.assert_survives("invalid JSON")
 
     def test_empty_file(self):
-        self.bad_json.write_text("")
+        self.bad_json.write_text("", encoding="utf-8")
         self.assert_survives("invalid JSON")
 
     def test_not_an_object(self):
-        self.bad_json.write_text("[]")
+        self.bad_json.write_text("[]", encoding="utf-8")
         self.assert_survives("must contain a JSON object")
 
     def test_missing_fields(self):
-        meta = json.loads(self.bad_json.read_text())
+        meta = json.loads(self.bad_json.read_text(encoding="utf-8"))
         del meta["stage"], meta["history"]
-        self.bad_json.write_text(json.dumps(meta))
+        self.bad_json.write_text(json.dumps(meta), encoding="utf-8")
         self.assert_survives("missing field(s): stage, history")
 
     def test_unknown_stage(self):
-        meta = json.loads(self.bad_json.read_text())
+        meta = json.loads(self.bad_json.read_text(encoding="utf-8"))
         meta["stage"] = "voice-studio"
-        self.bad_json.write_text(json.dumps(meta))
+        self.bad_json.write_text(json.dumps(meta), encoding="utf-8")
         self.assert_survives("unknown stage 'voice-studio'")
 
     def test_binary_garbage(self):
@@ -155,13 +155,13 @@ class TestDamagedProjects(Base):
         self.assertIn("Skipped damaged project", out)
 
     def test_warning_reported_once_and_dashboard_counts_it(self):
-        self.bad_json.write_text("{")
+        self.bad_json.write_text("{", encoding="utf-8")
         code, out = self.cli("dashboard")
         self.assertEqual(out.count("Warning:"), 1)
         self.assertIn("Damaged projects (skipped)      : 1", out)
 
     def test_damaged_project_cannot_be_found_or_overwritten(self):
-        self.bad_json.write_text("{")
+        self.bad_json.write_text("{", encoding="utf-8")
         with self.assertRaises(FactoryError) as e:
             find_project(self.ctx, "bad-one")
         self.assertIn("damaged", str(e.exception))
@@ -169,7 +169,7 @@ class TestDamagedProjects(Base):
             create_project(self.ctx, "Bad one", "ms", "gaming", created="2026-01-01")
 
     def test_good_projects_still_work_end_to_end(self):
-        self.bad_json.write_text("{")
+        self.bad_json.write_text("{", encoding="utf-8")
         code, out = self.cli("advance", "good-one", "--force")
         self.assertEqual(code, 0, out)
 
@@ -180,7 +180,7 @@ class TestGitignore(unittest.TestCase):
                 "wav", "mp3", "m4a"]
 
     def patterns(self):
-        lines = (ROOT / ".gitignore").read_text().splitlines()
+        lines = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
         return [line.strip() for line in lines if line.strip() and not line.startswith(("#", "!"))]
 
     def ignored(self, name):

@@ -97,12 +97,12 @@ class TestBrokenSettingsFiles(Base):
         for name, argv in (("settings", ["status"]), ("languages", ["ideas"]), ("formats", ["new", "X", "--lang", "en", "--division", "gaming"]),
                            ("divisions", ["niches"]), ("pipeline", ["status"]), ("platforms", ["publish", "record", "main-project", "--platform", "youtube", "--url", "https://youtu.be/a"]),
                            ("visual_styles", ["library", "visuals"])):
-            original = (self.tmp / f"config/{name}.json").read_text()
+            original = (self.tmp / f"config/{name}.json").read_text(encoding="utf-8")
             self.break_file(f"config/{name}.json", "{\n  \"a\": 1,\n}")
             self.ctx.config._cache.clear()
             self.assert_clear_error(argv, f"config/{name}.json is not valid JSON (line ",
                                     f"git checkout -- config/{name}.json")
-            (self.tmp / f"config/{name}.json").write_text(original)
+            (self.tmp / f"config/{name}.json").write_text(original, encoding="utf-8")
             self.ctx.config._cache.clear()
 
     def test_broken_brand_json(self):
@@ -121,11 +121,11 @@ class TestBrokenSettingsFiles(Base):
              "item 1 of 'channels' is missing 'name'"),
         ]
         for rel, data, expected in cases:
-            original = (self.tmp / rel).read_text()
-            (self.tmp / rel).write_text(json.dumps(data))
+            original = (self.tmp / rel).read_text(encoding="utf-8")
+            (self.tmp / rel).write_text(json.dumps(data), encoding="utf-8")
             self.ctx.config._cache.clear()
             self.assert_clear_error(["dashboard"], f"{rel} has a problem: {expected}")
-            (self.tmp / rel).write_text(original)
+            (self.tmp / rel).write_text(original, encoding="utf-8")
         self.ctx.config._cache.clear()
         code, out = self.cli("dashboard")
         self.assertEqual(code, 0, out)
@@ -143,9 +143,9 @@ class TestBrokenSettingsFiles(Base):
 class TestIncompleteProjectJson(Base):
     def rewrite(self, change):
         path = self.p.folder / "project.json"
-        meta = json.loads(path.read_text())
+        meta = json.loads(path.read_text(encoding="utf-8"))
         change(meta)
-        path.write_text(json.dumps(meta))
+        path.write_text(json.dumps(meta), encoding="utf-8")
 
     def test_missing_optional_fields_get_defaults(self):
         def drop(meta):
@@ -161,9 +161,9 @@ class TestIncompleteProjectJson(Base):
         self.assertEqual((p.meta["brand"], p.meta["target_seconds"], p.meta["publications"], p.meta["created"]),
                          ("qhaze", 60, [], "2026-01-01"))
         # Defaults are not written until the project is saved by a command
-        self.assertNotIn("brand", json.loads((self.p.folder / "project.json").read_text()))
+        self.assertNotIn("brand", json.loads((self.p.folder / "project.json").read_text(encoding="utf-8")))
         advance(self.ctx, p, force=True)
-        self.assertEqual(json.loads((self.p.folder / "project.json").read_text())["brand"], "qhaze")
+        self.assertEqual(json.loads((self.p.folder / "project.json").read_text(encoding="utf-8"))["brand"], "qhaze")
 
     def test_bad_types_are_reported_not_crashed(self):
         cases = [
@@ -175,7 +175,7 @@ class TestIncompleteProjectJson(Base):
             (lambda m: m.update(title=""), "'title' must be non-empty text"),
             (lambda m: m.update(division=7), "'division' must be non-empty text"),
         ]
-        original = (self.p.folder / "project.json").read_text()
+        original = (self.p.folder / "project.json").read_text(encoding="utf-8")
         for change, expected in cases:
             self.rewrite(change)
             self.ctx.warnings.clear()
@@ -183,7 +183,7 @@ class TestIncompleteProjectJson(Base):
             self.assertEqual(code, 0, out)
             self.no_traceback(out)
             self.assertIn(expected, out)
-            (self.p.folder / "project.json").write_text(original)
+            (self.p.folder / "project.json").write_text(original, encoding="utf-8")
 
 
 # ------------------------------------------------------------------ B4
@@ -207,9 +207,9 @@ class TestCopiedOrMisplacedProjects(Base):
     def test_true_duplicates_are_all_skipped_with_warning(self):
         dest = self.tmp / "brands/qhaze/en/gaming" / self.p.folder.name
         shutil.copytree(self.p.folder, dest)
-        meta = json.loads((dest / "project.json").read_text())
+        meta = json.loads((dest / "project.json").read_text(encoding="utf-8"))
         meta["division"] = "gaming"
-        (dest / "project.json").write_text(json.dumps(meta))
+        (dest / "project.json").write_text(json.dumps(meta), encoding="utf-8")
         code, out = self.cli("status")
         self.assertEqual(code, 0, out)
         self.assertIn("Skipped duplicate project id '2026-01-01_en_main-project' found in", out)
@@ -238,9 +238,9 @@ class TestCopiedOrMisplacedProjects(Base):
             self.assertIn("move it to brands/qhaze/en/psychology/", out)
 
     def test_brand_mismatch_detected(self):
-        meta = json.loads((self.p.folder / "project.json").read_text())
+        meta = json.loads((self.p.folder / "project.json").read_text(encoding="utf-8"))
         meta["brand"] = "other"
-        (self.p.folder / "project.json").write_text(json.dumps(meta))
+        (self.p.folder / "project.json").write_text(json.dumps(meta), encoding="utf-8")
         code, out = self.cli("status")
         self.assertIn("it says brand 'other' but is stored under brands/qhaze/", out)
 
@@ -269,11 +269,11 @@ class TestAnalyticsNeverDropsNumbers(Base):
         self.assert_all_saved()
 
     def test_file_emptied(self):
-        self.csv.write_text("")
+        self.csv.write_text("", encoding="utf-8")
         self.assert_all_saved()
 
     def test_columns_removed_keeps_old_rows_and_extra_columns(self):
-        self.csv.write_text("date_recorded,platform,views,my_note\n2026-01-03,youtube,10,keep\n")
+        self.csv.write_text("date_recorded,platform,views,my_note\n2026-01-03,youtube,10,keep\n", encoding="utf-8")
         self.assert_all_saved()
         rows = read_csv(self.csv)
         self.assertEqual((rows[0]["views"], rows[0]["my_note"], rows[0]["likes"]), ("10", "keep", ""))
@@ -294,16 +294,16 @@ class TestAnalyticsNeverDropsNumbers(Base):
                          ("1500", "90", "4.2", "11"))
 
     def test_shotlist_rebuilt_when_missing_or_empty(self):
-        (self.p.folder / "03_script/script.md").write_text("## [SCENE 1] Hook\nHello there.\n")
+        (self.p.folder / "03_script/script.md").write_text("## [SCENE 1] Hook\nHello there.\n", encoding="utf-8")
         shot = self.p.folder / "06_visuals/shotlist.csv"
-        for prepare in (shot.unlink, lambda: shot.write_text(""),
+        for prepare in (shot.unlink, lambda: shot.write_text("", encoding="utf-8"),
                         lambda: shot.write_bytes(b"scene,narration_summary,my_col\r\n")):
             prepare()
             code, out = self.cli("script", "shotlist", "main-project", "--force")
             self.assertEqual(code, 0, out)
             rows = read_csv(shot)
             self.assertEqual((rows[0]["scene"], rows[0]["status"]), ("1", "todo"))
-        self.assertIn("my_col", shot.read_text().splitlines()[0])
+        self.assertIn("my_col", shot.read_text(encoding="utf-8").splitlines()[0])
 
 
 # ------------------------------------------------------------------ B11

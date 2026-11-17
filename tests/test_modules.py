@@ -28,13 +28,13 @@ class TestProduction(Base):
         self.assertEqual([f.name for f in (p.folder / "05_voice").iterdir()], ["voice.md"])
         self.assertNotIn("voice_preset", p.meta)
         for md in p.folder.rglob("*.md"):
-            self.assertNotIn("{{", md.read_text(), md)
+            self.assertNotIn("{{", md.read_text(encoding="utf-8"), md)
 
     def test_malay_project_uses_malay_template_and_folder(self):
         p = self.new("Sejarah nasi lemak", lang="ms", division="food-cooking")
         self.assertIn("/ms/food-cooking/", p.folder.as_posix())
-        self.assertIn("# Skrip:", (p.folder / "03_script/script.md").read_text())
-        self.assertIn("Makanan & Masakan", (p.folder / "01_research/research.md").read_text())
+        self.assertIn("# Skrip:", (p.folder / "03_script/script.md").read_text(encoding="utf-8"))
+        self.assertIn("Makanan & Masakan", (p.folder / "01_research/research.md").read_text(encoding="utf-8"))
 
     def test_format_and_input_validation(self):
         self.new(seconds=90)
@@ -88,7 +88,7 @@ class TestScriptStudio(Base):
     def test_parse_and_analyse(self):
         p = self.new()
         write_script(self.ctx, p)
-        scenes = scripts.parse_scenes((p.folder / "03_script/script.md").read_text())
+        scenes = scripts.parse_scenes((p.folder / "03_script/script.md").read_text(encoding="utf-8"))
         self.assertEqual([s["number"] for s in scenes], [1, 2])
         self.assertNotIn("Visual", scenes[0]["narration"])
         self.assertEqual(scripts.spoken_text(scenes[0]["narration"]), "This is a test hook sentence.")
@@ -97,7 +97,7 @@ class TestScriptStudio(Base):
         self.assertEqual(r["unchecked_claims"], [1])
         self.assertFalse(r["in_range"])  # ~20 words is under 15 s
         fc = p.folder / "04_factcheck/factcheck.md"
-        fc.write_text(fc.read_text().replace("| F1  |                              |", "| F1  | test claim |"))
+        fc.write_text(fc.read_text(encoding="utf-8").replace("| F1  |                              |", "| F1  | test claim |"), encoding="utf-8")
         self.assertEqual(scripts.analyse(self.ctx, p)["unchecked_claims"], [])
 
     def test_shotlist_from_scenes(self):

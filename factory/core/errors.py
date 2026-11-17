@@ -8,16 +8,23 @@ class FactoryError(Exception):
     """A user-facing error: the CLI prints the message and exits with code 1."""
 
 
-def _display_path(filename, root=None):
+def display_path(filename, root=None):
+    """How a path is shown to users: relative to the factory folder when inside
+    it, and always with '/' separators, so messages look the same on Windows,
+    macOS and Linux (Windows accepts '/' in paths too)."""
     if not filename:
         return "a file"
     path = Path(filename)
     if root is not None:
-        try:
-            return str(path.resolve().relative_to(Path(root).resolve()))
-        except (ValueError, OSError):
-            pass
-    return str(path)
+        for candidate, base in ((path, Path(root)), (path.resolve(), Path(root).resolve())):
+            try:
+                return candidate.relative_to(base).as_posix()
+            except (ValueError, OSError):
+                continue
+    return path.as_posix()
+
+
+_display_path = display_path  # backwards-compatible name
 
 
 def describe_os_error(error, root=None):
