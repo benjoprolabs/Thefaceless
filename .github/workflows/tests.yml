@@ -21,9 +21,7 @@ jobs:
   test:
     name: ${{ matrix.os }} / Python ${{ matrix.python }}${{ matrix.experimental && ' (informational)' || '' }}
     runs-on: ${{ matrix.os }}
-    # macOS runners on the free plan can wait in the queue for a long time, and
-    # the limit also counts that wait, so macOS gets 60 minutes; others 15.
-    timeout-minutes: ${{ matrix.os == 'macos-latest' && 60 || 15 }}
+    timeout-minutes: 15
     # Informational jobs (newest Python) are reported but never block a merge.
     continue-on-error: ${{ matrix.experimental }}
     strategy:
@@ -39,6 +37,9 @@ jobs:
           - { os: ubuntu-latest,  python: "3.13", experimental: false }
           - { os: windows-latest, python: "3.13", experimental: false }
           - { os: macos-latest,   python: "3.13", experimental: false }
+          # macOS Intel uses a separate pool of free runners, so macOS is still
+          # tested when GitHub has no arm64 (macos-latest) runner available.
+          - { os: macos-15-intel, python: "3.13", experimental: false }
           - { os: ubuntu-latest,  python: "3.14", experimental: true }
     steps:
       - uses: actions/checkout@v5

@@ -251,7 +251,8 @@ Verified by free GitHub Actions CI (`.github/workflows/tests.yml`) on every pull
 | Ubuntu · Python 3.10, 3.11, 3.12, 3.13 | Full test suite passes |
 | Ubuntu 24.04 · Python 3.9 | Full test suite passes (3.9 is end-of-life and has no build for the newer `ubuntu-latest` image, so it runs on 24.04) |
 | Windows · Python 3.13 | Full test suite passes (default file encoding cp1252; one Unix-permission test is skipped by design) |
-| macOS · Python 3.13 | Full test suite passes |
+| macOS (arm64, `macos-latest`) · Python 3.13 | Full test suite passes |
+| macOS (Intel, `macos-15-intel`) · Python 3.13 | Full test suite passes (separate runner pool, so macOS is still tested when no arm64 runner is free) |
 | Ubuntu · Python 3.13 with a non-UTF-8 locale | Full test suite passes (guards against encoding regressions) |
 | Ubuntu · Python 3.14 | Informational job (doesn't block merging); passes |
 | Python < 3.9 | Not supported; clear message at start-up |
