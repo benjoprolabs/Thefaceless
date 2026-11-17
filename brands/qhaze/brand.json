@@ -1,0 +1,10 @@
+{
+  "id": "qhaze",
+  "name": "QHAZE",
+  "tagline": "Curious stories, clearly told.",
+  "divisions": ["what-if-science", "psychology", "history-mystery", "product-affiliate", "technology-ai", "food-cooking", "gaming"],
+  "channels": [
+    {"id": "qhaze-en", "name": "QHAZE", "language": "en", "platforms": ["youtube", "youtube_shorts", "tiktok"]},
+    {"id": "qhaze-ms", "name": "QHAZE Melayu", "language": "ms", "platforms": ["youtube", "youtube_shorts", "tiktok"]}
+  ]
+}

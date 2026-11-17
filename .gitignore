@@ -1,0 +1,63 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------------------------
+# Media files are large and are generated/edited outside git.
+# Keep them on your computer, a cloud drive or an external disk.
+# Patterns are case-insensitive: [pP][nN][gG] matches .png, .PNG, .Png ...
+# To commit one specific file anyway (e.g. a small logo), add a line like:
+#   !assets/brand/logo.png
+# ---------------------------------------------------------------------
+
+# Video: .mp4, .mov, .mkv, .webm, .avi, .wmv, .flv, .m4v, .mpg, .mpeg, .3gp
+*.[mM][pP]4
+*.[mM][oO][vV]
+*.[mM][kK][vV]
+*.[wW][eE][bB][mM]
+*.[aA][vV][iI]
+*.[wW][mM][vV]
+*.[fF][lL][vV]
+*.[mM]4[vV]
+*.[mM][pP][gG]
+*.[mM][pP][eE][gG]
+*.3[gG][pP]
+
+# Images: .png, .jpg, .jpeg, .gif, .webp, .bmp, .tif, .tiff, .heic, .heif, .svg
+*.[pP][nN][gG]
+*.[jJ][pP][gG]
+*.[jJ][pP][eE][gG]
+*.[gG][iI][fF]
+*.[wW][eE][bB][pP]
+*.[bB][mM][pP]
+*.[tT][iI][fF]
+*.[tT][iI][fF][fF]
+*.[hH][eE][iI][cC]
+*.[hH][eE][iI][fF]
+*.[sS][vV][gG]
+
+# Design / editing project files: .psd, .psb, .ai, .xcf, .kra, .aep, .prproj, .drp, .fcpbundle
+*.[pP][sS][dD]
+*.[pP][sS][bB]
+*.[aA][iI]
+*.[xX][cC][fF]
+*.[kK][rR][aA]
+*.[aA][eE][pP]
+*.[pP][rR][pP][rR][oO][jJ]
+*.[dD][rR][pP]
+*.[fF][cC][pP][bB][uU][nN][dD][lL][eE]
+
+# Audio: .wav, .mp3, .m4a, .aac, .flac, .ogg
+*.[wW][aA][vV]
+*.[mM][pP]3
+*.[mM]4[aA]
+*.[aA][aA][cC]
+*.[fF][lL][aA][cC]
+*.[oO][gG][gG]
+
+# Secrets: API keys belong in environment variables, never in files
+.env
+.env.*
