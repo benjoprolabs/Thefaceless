@@ -21,7 +21,9 @@ jobs:
   test:
     name: ${{ matrix.os }} / Python ${{ matrix.python }}${{ matrix.experimental && ' (informational)' || '' }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    # macOS runners on the free plan can wait in the queue for a long time, and
+    # the limit also counts that wait, so macOS gets 60 minutes; others 15.
+    timeout-minutes: ${{ matrix.os == 'macos-latest' && 60 || 15 }}
     # Informational jobs (newest Python) are reported but never block a merge.
     continue-on-error: ${{ matrix.experimental }}
     strategy:
