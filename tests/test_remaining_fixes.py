@@ -16,7 +16,7 @@ from factory.core.files import read_csv, slugify, title_slug
 from factory.core.projects import iter_projects
 from factory.modules import ideas
 from factory.modules.production import advance, create_project, stage_blockers
-from tests.helpers import make_sandbox, remove_sandbox, run_cli, tick_all
+from tests.helpers import add_source, make_sandbox, remove_sandbox, run_cli, tick_all
 
 
 class Base(unittest.TestCase):
@@ -64,6 +64,7 @@ class TestGateCannotBeBypassed(Base):
     def test_ticked_checklist_still_advances_and_force_still_works(self):
         tick_all(self.p.folder / "01_research/research.md")
         self.assertEqual(stage_blockers(self.ctx, self.p), [])
+        add_source(self.ctx, self.p)  # M2: a source is required to leave Research
         self.assertEqual(advance(self.ctx, self.p), "planning")
         shutil.rmtree(self.p.folder / "02_planning")
         self.assertEqual(advance(self.ctx, self.p, force=True), "script")

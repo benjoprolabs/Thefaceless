@@ -55,3 +55,9 @@ def write_script(ctx, project, body=SAMPLE_SCRIPT_SCENES):
     path = project.stage_dir(ctx, "script") / "script.md"
     path.write_text("# Script\n\n" + body, encoding="utf-8")
     return path
+
+
+def add_source(ctx, project, title="Test source", url="https://www.example.org/study"):
+    """Record one valid source, so the project may leave the Research stage (M2)."""
+    from factory.modules import research
+    return research.add_source(ctx, project, title, url, "study", "today")[0]

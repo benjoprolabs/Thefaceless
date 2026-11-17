@@ -248,26 +248,28 @@ class TestIdeasCheck(Base):
 class TestProjectSideWarnings(Base):
     def test_warns_but_never_blocks(self):
         project = self.produced("EN-002")
-        self.assertEqual(run_checks(self.ctx, project, "research"), [])
+        idea_findings = lambda: [f for f in run_checks(self.ctx, project, "research")  # noqa: E731
+                                 if f.code.startswith("IDEA_")]  # M2 adds source checks at Research
+        self.assertEqual(idea_findings(), [])
         rows = read_csv(self.en)
         for r in rows:
             if r["id"] == "EN-002":
                 r["project_id"] = "2026-01-01_en_other"
         from factory.core.files import write_csv
         write_csv(self.en, rows, ideas.FIELDS)
-        findings = run_checks(self.ctx, project, "research")
-        self.assertEqual([(f.level, f.code) for f in findings], [(WARN, "IDEA_NOT_LINKED")])
+        self.assertEqual([(f.level, f.code) for f in idea_findings()], [(WARN, "IDEA_NOT_LINKED")])
         self.write(self.en, HEADER11 + "\n")
-        findings = run_checks(self.ctx, project, "research")
+        findings = idea_findings()
         self.assertEqual([(f.level, f.code) for f in findings], [(WARN, "IDEA_MISSING")])
         self.assertEqual(failures(findings), [])
-        from tests.helpers import tick_all
+        from tests.helpers import add_source, tick_all
         tick_all(project.folder / "01_research/research.md")
+        add_source(self.ctx, project)  # M2: a source is required to leave Research
         self.assertEqual(advance(self.ctx, project), "planning")  # WARN doesn't block
 
     def test_projects_without_an_idea_have_no_finding(self):
         p = create_project(self.ctx, "No idea", "ms", "gaming", created="2026-01-01")
-        self.assertEqual(run_checks(self.ctx, p, "research"), [])
+        self.assertEqual([f for f in run_checks(self.ctx, p, "research") if f.code.startswith("IDEA_")], [])
 
 
 class TestDuplicates(Base):

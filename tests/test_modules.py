@@ -5,7 +5,7 @@ from factory.core.files import read_csv
 from factory.core.projects import find_project
 from factory.modules import analytics, assets, dashboard, ideas, publishing, scripts
 from factory.modules.production import advance, create_project, stage_blockers
-from tests.helpers import make_sandbox, remove_sandbox, tick_all, write_script
+from tests.helpers import add_source, make_sandbox, remove_sandbox, tick_all, write_script
 
 
 class Base(unittest.TestCase):
@@ -55,6 +55,7 @@ class TestProduction(Base):
         with self.assertRaises(FactoryError):
             advance(self.ctx, p)
         tick_all(p.folder / "01_research/research.md")
+        add_source(self.ctx, p)  # M2: a source is required to leave Research
         self.assertEqual(advance(self.ctx, p), "planning")
         self.assertEqual(advance(self.ctx, p, force=True), "script")
         self.assertTrue(p.meta["history"][-1]["forced"])
