@@ -238,11 +238,17 @@ factory/
 
 ### Python version support
 
-| Version | Status |
+Verified by free GitHub Actions CI (`.github/workflows/tests.yml`) on every pull request:
+
+| Environment | Status |
 |---|---|
-| 3.11, 3.12, 3.13 | Full test suite passes |
-| 3.9, 3.10 | Supported by design and statically checked (3.9/3.10 grammar, no newer standard-library APIs, stdlib only); **not yet run**. Interpreters were not available in the build environment |
-| < 3.9 | Not supported; clear message at start-up |
+| Ubuntu · Python 3.10, 3.11, 3.12, 3.13 | Full test suite passes |
+| Ubuntu 24.04 · Python 3.9 | Full test suite passes (3.9 is end-of-life and has no build for the newer `ubuntu-latest` image, so it runs on 24.04) |
+| Windows · Python 3.13 | Full test suite passes (default file encoding cp1252; one Unix-permission test is skipped by design) |
+| macOS · Python 3.13 | Full test suite passes |
+| Ubuntu · Python 3.13 with a non-UTF-8 locale | Full test suite passes (guards against encoding regressions) |
+| Ubuntu · Python 3.14 | Informational job (doesn't block merging); passes |
+| Python < 3.9 | Not supported; clear message at start-up |
 
 ---
 
