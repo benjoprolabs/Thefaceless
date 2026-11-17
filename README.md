@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 1 (v0.3.4). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 1 of 6 complete (v0.3.4): Core System & Foundation. Next: Phase 2, Content Production Engine (awaiting approval). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|

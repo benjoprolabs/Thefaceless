@@ -240,8 +240,35 @@ factory/
 
 ---
 
-## 8. Roadmap
+## 8. Roadmap (official, approved)
 
-Development is paused after the v0.3.0 scope reset (Voice Studio removed) and the
-v0.3.1 audit fixes, the v0.3.2 compatibility / error-handling round the v0.3.3 hardening round and the v0.3.4 remaining-issues round.
-The next phase will be decided and approved separately.
+| Phase | Name | Status |
+|-------|------|--------|
+| 1 | Core System & Foundation | ✅ Complete (v0.3.4) |
+| 2 | Content Production Engine | Not started (awaiting approval) |
+| 3 | Web Dashboard & UI/UX | Not started |
+| 4 | Content Automation | Not started |
+| 5 | Intelligence & Analytics | Not started |
+| 6 | Deployment & Business System | Not started |
+
+### Rules for every phase
+- **Free-first:** no paid APIs or paid services; free, local tools only, added as optional extras.
+- **Out of scope:** Voice Studio, audio recording, TTS, voice cloning, voice changing and ElevenLabs.
+- Each phase starts only after explicit approval.
+
+### Phase 2: Content Production Engine (scope)
+Builds on the Phase 1 workflow. Must include:
+research and idea management · content planning · script writing · fact-checking · shot lists ·
+editing workflow · **subtitle workflow** · quality control · publishing · analytics.
+
+### Phase 3: Web Dashboard & UI/UX (recorded requirements)
+- A local web dashboard built on the existing module functions (no logic duplicated in the UI).
+- **Three themes:** Dark Brown, Black and White.
+- **UI sound effects:** short interface sounds (e.g. clicks, confirmations), from free or own
+  sound files, with an on/off setting. These are interface feedback only, not voice or audio
+  production features.
+
+### Phase 1 history
+v0.1.0 foundation → v0.2.0 strategy and modules → v0.3.0 Voice Studio removed (scope reset) →
+v0.3.1 audit fixes → v0.3.2 compatibility and error handling → v0.3.3 hardening →
+v0.3.4 remaining audit issues.
