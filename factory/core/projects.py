@@ -69,8 +69,12 @@ def load_checked(ctx, meta_path):
         meta = read_json(meta_path)
     except json.JSONDecodeError as e:
         problem = f"invalid JSON (line {e.lineno}, column {e.colno}: {e.msg})"
-    except (OSError, UnicodeDecodeError) as e:
-        problem = f"cannot be read ({e.__class__.__name__})"
+    except PermissionError:
+        problem = "permission denied (your account can't read this file)"
+    except UnicodeDecodeError:
+        problem = "not a text file (cannot be decoded)"
+    except OSError as e:
+        problem = f"cannot be read ({e.strerror or e.__class__.__name__})"
     else:
         problem = project_problem(ctx, meta)
         if problem is None:

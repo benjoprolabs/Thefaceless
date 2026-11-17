@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.3.1 · **Phase:** 1 (Python CLI, local files)
+**Version:** 0.3.2 · **Phase:** 1 (Python CLI, local files)
 
 ---
 
@@ -151,7 +151,7 @@ factory/
 ├── __main__.py          python -m factory
 ├── cli.py               Builds the parser from MODULES; validates --lang; prints errors and warnings
 ├── core/
-│   ├── errors.py        FactoryError (user-facing error)
+│   ├── errors.py        FactoryError + plain-language descriptions of file-system errors
 │   ├── config.py        Paths (all locations), Config (cached JSON), Context (+ warnings)
 │   ├── files.py         JSON helpers, Excel-tolerant CSV reading, slugify, checklist parsing
 │   ├── templates.py     {{placeholder}} rendering + override lookup
@@ -190,6 +190,9 @@ factory/
 | Non-numeric score (e.g. `#VALUE!`) or malformed idea ID | Treated as 0 / ignored for numbering; never crashes |
 | Damaged `project.json` (invalid JSON, not an object, missing fields, unknown stage/language/format) | Project skipped; `Warning: Skipped damaged project <path>: <reason>` printed after the command; dashboard shows a count; the folder can't be overwritten by `new` |
 | Unknown `--lang` (any command) | Error listing valid languages; input is case-insensitive (`MS` → `ms`) |
+| `new --idea X --lang L` where L is not the idea's language | `Conflicting options` error explaining both fixes (drop `--lang`, or add the idea to the other language's backlog). A matching `--lang` is allowed. A title, `--division` or `--format` given with `--idea` replaces the idea's value |
+| Permission denied / file locked (e.g. open in Excel) / missing file / disk full / read-only disk | `cli.main` turns any `OSError` into a plain message with the file path and a suggested fix; never a traceback. `new` removes a half-created project folder; if only the idea list can't be updated, the message says the project exists and how to finish the link by hand. An unreadable `project.json` is skipped with reason "permission denied" |
+| Python older than 3.9 | `python -m factory` stops with "needs Python 3.9 or newer" before importing anything else |
 | `publish record` | Platform must be in `config/platforms.json` (case-insensitive); URL must be a full `http(s)://` link on that platform's domain; date `YYYY-MM-DD`, not in the future; the same URL can't be recorded twice |
 | `analytics add` | Platform must be known **and** already recorded as a publication of that project; all numbers ≥ 0; CTR 0–100 |
 
@@ -197,7 +200,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (58 tests, < 1 s, no network).
+`python -m unittest discover -s tests -v` (78 tests, < 1 s, no network).
 
 | File | Covers |
 |------|--------|
@@ -206,11 +209,20 @@ factory/
 | `test_modules.py` | modules 1–9: project creation, EN/MS separation, format limits, stage gates, ideas, script analysis, assets, publishing, analytics, dashboard |
 | `test_cli.py` | complete 10-stage workflow through CLI commands only; command list |
 | `test_audit_fixes.py` | Excel CSV handling, damaged projects, `.gitignore` media rules, `--lang` validation, platform/URL/date/number validation |
+| `test_compat_errors.py` | `--idea`/`--lang` conflicts; friendly permission/file errors (simulated, plus a real read-only test that runs for non-root users); Python 3.9/3.10 grammar, newer-API scan, stdlib-only imports, version guard |
+
+### Python version support
+
+| Version | Status |
+|---|---|
+| 3.11, 3.12, 3.13 | Full test suite passes |
+| 3.9, 3.10 | Supported by design and statically checked (3.9/3.10 grammar, no newer standard-library APIs, stdlib only); **not yet run**. Interpreters were not available in the build environment |
+| < 3.9 | Not supported; clear message at start-up |
 
 ---
 
 ## 8. Roadmap
 
 Development is paused after the v0.3.0 scope reset (Voice Studio removed) and the
-v0.3.1 audit fixes.
+v0.3.1 audit fixes and the v0.3.2 compatibility / error-handling round.
 The next phase will be decided and approved separately.

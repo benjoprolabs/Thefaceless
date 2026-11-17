@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 
 from factory.core.errors import FactoryError
 
+ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 HOSTNAME = re.compile(r"^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$")
 
 
@@ -42,8 +43,14 @@ def check_url(ctx, url, platform):
 
 
 def check_date(value):
-    """YYYY-MM-DD, not in the future."""
+    """YYYY-MM-DD, not in the future.
+
+    The pattern is checked first because date.fromisoformat() accepts extra
+    formats (e.g. 20261120) on Python 3.11+ but not on 3.9/3.10; this keeps
+    the rule identical on every supported version."""
     try:
+        if not ISO_DATE.match(value or ""):
+            raise ValueError(value)
         parsed = date.fromisoformat(value)
     except (TypeError, ValueError):
         raise FactoryError(f"Invalid date '{value}'. Use YYYY-MM-DD, e.g. 2026-11-20") from None

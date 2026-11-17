@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 1 (v0.3.1). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 1 (v0.3.2). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -19,6 +19,10 @@ no database, no login and no paid services.
 ## Setup
 
 **Requirements:** Python 3.9+ and Git. No packages to install.
+
+Tested on Python 3.11, 3.12 and 3.13. The code is written for 3.9+ and checked automatically
+against the 3.9/3.10 grammar, but it has **not yet been run on 3.9 or 3.10**. Older Pythons get a
+clear "needs Python 3.9 or newer" message.
 
 ```bash
 git clone https://github.com/benjoprolabs/Thefaceless.git
@@ -64,7 +68,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 | 3 Idea Manager | `ideas [--lang en\|ms] [--division ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` |
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
-| 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` · `status` · `show P` · `advance P [--force]` |
+| 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `advance P [--force]` |
 | 7 Publishing Manager | `publish` · `publish record P --platform youtube --url https://youtu.be/...` |
 | 8 Analytics | `analytics add P --platform youtube --views 1200 --likes 80 ...` · `analytics report` |
 | 9 Asset Manager | `assets` · `assets add FILE --type music --source "..." --license "..."` · `assets check` |
@@ -102,7 +106,7 @@ docs/            Architecture
 python3 -m unittest discover -s tests -v
 ```
 
-58 tests, no network needed.
+78 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
 
 ## Editing CSV files in Excel
 
@@ -116,6 +120,18 @@ The next time the tool writes the file, it is saved back as a standard CSV.
   (see `config/platforms.json`; names are not case-sensitive).
 - URLs must be full links on that platform, e.g. `https://www.tiktok.com/@qhaze/video/...`.
 - Analytics can only be logged for a platform the video was recorded as published on.
+
+## If a file can't be opened or saved
+
+Errors such as "Permission denied" are shown as a short message with what to do, for example:
+
+```
+Error: Permission denied: cannot access 'brands/qhaze/en/ideas.csv'.
+  - If the file is open in another program (for example Excel), close it and try again.
+  - Check that your user account is allowed to read and change files in this folder.
+```
+
+Nothing is half-saved: if `new` can't write a project, the partly created folder is removed.
 
 ## If a project is damaged
 

@@ -4,7 +4,10 @@ A project can only advance when every '- [ ]' checklist item in the current
 stage's Markdown files is ticked (use --force to override).
 """
 
+import shutil
+
 from factory.core.config import FactoryError
+from factory.core.errors import describe_os_error
 from factory.core.files import slugify, today, unchecked_items
 from factory.core.options import (add_brand, add_division, add_language, brand_id,
                                   check_division, check_format, check_language)
@@ -52,14 +55,6 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
 
     values = template_values(ctx, brand, language, division, fmt, seconds, title,
                              project_id, idea_id, created)
-    folder.mkdir(parents=True)
-    for stage in ctx.config.stages:
-        stage_dir = folder / stage["folder"]
-        stage_dir.mkdir()
-        for name in stage["templates"]:
-            text = render_template(ctx.paths, name, values, brand=brand, language=language)
-            (stage_dir / name).write_text(text, encoding="utf-8")
-
     first = ctx.config.stages[0]["id"]
     project = Project(folder, {
         "id": project_id, "title": title, "brand": brand, "language": language,
@@ -69,9 +64,28 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
         "history": [{"stage": first, "date": created}],
         "publications": [],
     })
-    project.save()
+    folder.mkdir(parents=True)
+    try:
+        for stage in ctx.config.stages:
+            stage_dir = folder / stage["folder"]
+            stage_dir.mkdir()
+            for name in stage["templates"]:
+                text = render_template(ctx.paths, name, values, brand=brand, language=language)
+                (stage_dir / name).write_text(text, encoding="utf-8")
+        project.save()
+    except OSError:
+        # Don't leave a half-created project behind (it would block a retry).
+        shutil.rmtree(folder, ignore_errors=True)
+        raise
     if idea_id:
-        ideas_mod.link_project(ctx, brand, language, idea_id, project_id)
+        try:
+            ideas_mod.link_project(ctx, brand, language, idea_id, project_id)
+        except OSError as e:
+            raise FactoryError(
+                f"Project {project_id} was created, but the idea list could not be updated.\n"
+                f"{describe_os_error(e, ctx.paths.root)}\n"
+                f"  Then set {idea_id} to status 'in_production' and project_id '{project_id}' "
+                f"in {ctx.paths.ideas_csv(brand, language).relative_to(ctx.paths.root)}") from None
     return project
 
 
@@ -105,11 +119,28 @@ def advance(ctx, project, force=False, day=None):
 
 # ---------------------------------------------------------------- commands
 
+def check_idea_language(ctx, idea, idea_language, requested):
+    """An idea belongs to one language backlog, so --lang can't change it."""
+    if requested is None or requested == idea_language:
+        return
+    have = ctx.config.languages[idea_language]["name"]
+    want = ctx.config.languages[requested]["name"]
+    raise FactoryError(
+        f"Conflicting options: idea {idea['id']} is in the {have} backlog ({idea_language}), "
+        f"but --lang {requested} ({want}) was given.\n"
+        f"  - To create the {have} project, drop --lang:\n"
+        f"      python -m factory new --idea {idea['id']}\n"
+        f"  - To make a {want} version, add it to the {want} backlog first:\n"
+        f"      python -m factory ideas add \"<{want} title>\" --lang {requested} "
+        f"--division {idea['division']} --format {idea['format']}")
+
+
 def cmd_new(args, ctx):
     brand = brand_id(args, ctx)
     title, language, division, fmt = args.title, args.lang, args.division, args.format
     if args.idea:
         language, idea = ideas_mod.find_idea(ctx, brand, args.idea)
+        check_idea_language(ctx, idea, language, args.lang)
         if idea["project_id"]:
             raise FactoryError(f"Idea {idea['id']} already has project {idea['project_id']}")
         title = title or idea["title"]
@@ -174,7 +205,9 @@ def register(sub):
     add_division(new)
     new.add_argument("--format", help="short (15–90 s) or long (5–20 min)")
     new.add_argument("--seconds", type=int, help="target length in seconds")
-    new.add_argument("--idea", help="create from an idea ID, e.g. EN-002")
+    new.add_argument("--idea", help="create from an idea ID, e.g. EN-002. The language comes from the "
+                                    "idea (--lang must match it); a title, --division or --format you "
+                                    "give replaces the idea's value")
     new.set_defaults(func=cmd_new)
 
     st = sub.add_parser("status", help="Production Manager: list projects and stages")
