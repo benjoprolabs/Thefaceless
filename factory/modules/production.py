@@ -17,6 +17,7 @@ from factory.core import migrate as migrate_mod
 from factory.core.projects import CURRENT_SCHEMA, Project, find_project, iter_projects
 from factory.core.templates import find_template, render_template
 from factory.modules import ideas as ideas_mod
+from factory.modules import factcheck as _factcheck  # noqa: F401  (registers the fact-check checks)
 from factory.modules import planning as _planning  # noqa: F401  (registers the planning checks)
 from factory.modules import research as _research  # noqa: F401  (registers the research checks)
 from factory.modules import scripts as _scripts  # noqa: F401  (registers the script checks)

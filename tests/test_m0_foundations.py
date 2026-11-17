@@ -25,6 +25,7 @@ from factory.core.checks import FAIL, INFO, WARN, Finding, failures, format_find
 from factory.core.config import ROOT, FactoryError
 from factory.core.errors import display_path
 from factory.core.projects import CURRENT_SCHEMA, find_project, iter_projects
+from factory.modules import research
 from factory.modules.production import advance, back, create_project, gate_problems
 from tests.helpers import add_source, make_sandbox, remove_sandbox, run_cli, tick_all
 
@@ -133,8 +134,11 @@ class TestGatesUseChecks(Base):
             advance(self.ctx, self.p)
         self.assertIn("FACTCHECK_MISSING_CLAIM", str(e.exception))
         fc = self.p.folder / "04_factcheck/factcheck.md"
-        fc.write_text(fc.read_text(encoding="utf-8").replace("| F1  |                              |",
-                                                            "| F1  | counting |"), encoding="utf-8")
+        text = fc.read_text(encoding="utf-8")
+        row = next(line for line in text.splitlines() if line.startswith("| F1 "))
+        fc.write_text(text.replace(row, "| F1  | counting | S1 | ✅ | |"), encoding="utf-8")
+        add_source(self.ctx, self.p)  # M5: a claim needs a verified source and a verdict
+        research.set_verification(self.ctx, self.p, "S1", "verified")
         self.assertEqual(advance(self.ctx, self.p), "voice")
 
     def test_checklist_and_findings_reported_together(self):
