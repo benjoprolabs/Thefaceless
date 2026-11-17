@@ -11,7 +11,31 @@
     "name_ms": "Psikologi",
     "description": "Human behaviour, biases, habits and the mind.",
     "visual_style": "minimal-illustration",
-    "notes": "No medical or diagnostic advice. Cite studies, avoid overclaiming."
+    "notes": "No medical or diagnostic advice. Cite studies, avoid overclaiming.",
+    "sensitive_terms": {
+      "en": [
+        "cure",
+        "cures",
+        "cured",
+        "diagnose",
+        "diagnosed",
+        "diagnosis",
+        "treatment",
+        "medication",
+        "prescription",
+        "disorder"
+      ],
+      "ms": [
+        "sembuh",
+        "menyembuhkan",
+        "penawar",
+        "diagnosis",
+        "mendiagnosis",
+        "rawatan",
+        "ubat",
+        "gangguan mental"
+      ]
+    }
   },
   "history-mystery": {
     "name": "History & Mystery",
@@ -25,7 +49,8 @@
     "name_ms": "Produk & Afiliasi",
     "description": "Product reviews, comparisons and affiliate recommendations.",
     "visual_style": "clean-product",
-    "notes": "Affiliate links must be disclosed in the video and description."
+    "notes": "Affiliate links must be disclosed in the video and description.",
+    "disclosure_required": true
   },
   "technology-ai": {
     "name": "Technology & AI",

@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.4.3 · **Phase:** 2, M3 Content Planning (Python CLI, local files)
+**Version:** 0.4.4 · **Phase:** 2, M4 Script Writing Engine (Python CLI, local files)
 
 ---
 
@@ -51,7 +51,7 @@ Visual Production → Video Editing → Quality Control → Publishing → Analy
 |---|----------|--------|-------------|---------------|
 | 1 | `research`  | `01_research`  | `research.md` | Idea Manager |
 | 2 | `planning`  | `02_planning`  | `plan.md` | Production Manager |
-| 3 | `script`    | `03_script`    | `script.md` (Malay version in `templates/ms/`) | Script Studio |
+| 3 | `script`    | `03_script`    | `script.md` (Malay version in `templates/ms/`) | Script Writing Engine |
 | 4 | `factcheck` | `04_factcheck` | `factcheck.md` | Script Studio |
 | 5 | `voice`     | `05_voice`     | `voice.md` (manual checklist; voice-over produced outside this system) | Production Manager |
 | 6 | `visuals`   | `06_visuals`   | `visuals.md`, `shotlist.csv` | Visual Library |
@@ -63,7 +63,8 @@ Visual Production → Video Editing → Quality Control → Publishing → Analy
 **Stage gates.** Every stage template ends with a `## Stage checklist` of `- [ ]` items.
 `advance` refuses to move a project forward until every box in the current stage's
 Markdown files is ticked **and** the stage's automated checks (`factory/core/checks.py`) report
-no FAIL findings (since v0.4.0: script length and empty scenes at Script; claims missing from the
+no FAIL findings (since v0.4.0: script length and empty scenes at Script, plus the spoken
+Product & Affiliate disclosure since v0.4.4; claims missing from the
 fact check at Fact Checking). `check P` shows them. `--force` overrides both; the override and the
 skipped finding codes are recorded in the project history and shown on the dashboard.
 `back P` moves a project back one stage (recorded; files unchanged).
@@ -109,7 +110,7 @@ brands/qhaze/en/what-if-science/2026-11-17_why-octopuses-have-three-hearts/
 │                                stage, history[], publications[]
 ├── 01_research/research.md
 ├── 02_planning/plan.md
-├── 03_script/script.md
+├── 03_script/script.md, versions/vN.md (snapshots, created by `script snapshot`)
 ├── 04_factcheck/factcheck.md
 ├── 05_voice/voice.md
 ├── 06_visuals/visuals.md, shotlist.csv
@@ -151,7 +152,7 @@ A new brand or language can restyle any template without code changes.
 | 3 | Idea Manager | `modules/ideas.py` | `ideas`, `ideas add / show / edit / status / dupes / check / unlink` | Per-language backlog, scoring, status life cycle, tags and notes, duplicate detection, consistency check, idea ↔ project links (published on first publication) |
 | – | Research Engine | `modules/research.py` | `research sources / add-source / verify / check / copy-sources` | Structured source list per project (`sources.csv`), Research-stage checks and gate |
 | – | Content Planning | `modules/planning.py` | `plan check / set-date / calendar` | Reads and checks `plan.md`, `planned_publish`, publishing calendar with per-channel clash warnings |
-| 4 | Script Studio | `modules/scripts.py` | `script check / text / shotlist` | Parse scenes, word count → duration vs format limits, [F#] claim coverage, shot list from scenes |
+| 4 | Script Writing Engine | `modules/scripts.py` | `script check / text / shotlist / scaffold / snapshot / versions / diff` | Parse scenes, word count → duration vs format limits, per-scene timing at the language's rate, Script rules (hook, sentence length, call to action, disclosure, sensitive terms), [F#] claim coverage, scaffold from the plan outline, versions in `03_script/versions/` with `difflib` diffs, shot list from scenes |
 | 5 | Visual Library | `modules/library.py` | `library visuals` | Visual style per division |
 | 6 | Production Manager | `modules/production.py` | `new`, `status`, `show`, `advance` | Create projects from templates, stage gates, history |
 | 7 | Publishing Manager | `modules/publishing.py` | `publish`, `publish record` | Publish queue, per-platform publication records |
@@ -225,7 +226,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (237 tests, < 6 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
+`python -m unittest discover -s tests -v` (268 tests, < 7 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
 
 | File | Covers |
 |------|--------|
@@ -241,6 +242,7 @@ factory/
 | `test_m1_ideas.py` | idea status rules, `new --idea` from backlog/shortlisted only, EN-001 sample data, `ideas check` rules, project-side warnings, duplicates (English, Malay, Jawi), edit and locked fields, show/list filters, automatic published, old and Excel-saved files, Phase 1 regression |
 | `test_m2_research.py` | `sources.csv` add/list/verify/check/copy, every Research rule, the Research gate, the three M2 decisions, format 3 and `migrate` |
 | `test_m3_planning.py` | `plan.md` reading, every Planning rule, outline length, `set-date`, calendar filters and clashes, the Planning gate |
+| `test_m4_scripts.py` | scaffold (one scene per outline point, refuses written scripts, CRLF), snapshots/versions/diff, per-scene timing (Malay rate), every Script rule, rules from config, the Script gate |
 
 ### Python version support
 
