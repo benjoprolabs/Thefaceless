@@ -5,7 +5,6 @@ import os
 import shutil
 import stat
 import tempfile
-import wave
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
@@ -39,16 +38,6 @@ def run_cli(argv, ctx):
     with redirect_stdout(out), redirect_stderr(err):
         code = main(argv, ctx=ctx)
     return code, out.getvalue() + err.getvalue()
-
-
-def make_wav(path, seconds=2.0, rate=16000):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with wave.open(str(path), "wb") as w:
-        w.setnchannels(1)
-        w.setsampwidth(2)
-        w.setframerate(rate)
-        w.writeframes(b"\x01\x00" * int(seconds * rate))
-    return path
 
 
 def tick_all(path):

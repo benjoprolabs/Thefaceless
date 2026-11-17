@@ -8,7 +8,6 @@
 | Format | Short-form (9:16, 1080x1920) |
 | Target length | 45 s (allowed 15–90 s) |
 | Target words | ≈ 112 at 150 wpm |
-| Voice preset | female-documentary |
 | Visual style | cinematic-explainer |
 
 ## Angle / hook

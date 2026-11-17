@@ -25,8 +25,8 @@ class TestProduction(Base):
         self.assertEqual(p.folder, self.tmp / "brands/qhaze/en/psychology/2026-01-01_test-video")
         for stage in self.ctx.config.stages:
             self.assertTrue((p.folder / stage["folder"]).is_dir(), stage["id"])
-        for sub in ("raw", "edited", "tts", "converted", "exports"):
-            self.assertTrue((p.folder / "05_voice" / sub).is_dir())
+        self.assertEqual([f.name for f in (p.folder / "05_voice").iterdir()], ["voice.md"])
+        self.assertNotIn("voice_preset", p.meta)
         for md in p.folder.rglob("*.md"):
             self.assertNotIn("{{", md.read_text(), md)
 

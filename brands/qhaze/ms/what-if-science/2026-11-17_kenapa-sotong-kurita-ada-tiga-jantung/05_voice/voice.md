@@ -2,31 +2,15 @@
 
 - **Project:** 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung
 - **Language:** Bahasa Melayu
-- **Voice preset:** male-storytelling
-- **Method:** <!-- tts / record + convert / record only -->
+- **Produced with:** <!-- the tool or method used outside this system -->
 
-Audio files live in this folder and every action is logged in `audio_log.json`:
+The voice-over is produced outside this system. Get the narration text with:
+`python -m factory script text 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung`
 
-| Folder | Contents |
-|--------|----------|
-| `raw/` | Original recordings and uploads. **Never modified.** |
-| `edited/` | Trimmed copies of raw takes |
-| `tts/` | Text-to-speech output |
-| `converted/` | Voice-changer output |
-| `exports/` | Final MP3/WAV for the editor |
-
-Useful commands:
-```
-python -m factory voice tts 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung --preset male-storytelling
-python -m factory voice import 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung my_take.wav
-python -m factory voice convert 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung A001 --preset male-storytelling
-python -m factory voice list 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung
-python -m factory voice select 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung A00X
-python -m factory voice export 2026-11-17_kenapa-sotong-kurita-ada-tiga-jantung A00X --format wav
-```
+Store the final audio file wherever your editor can reach it. Audio files are
+not tracked in git.
 
 ## Stage checklist
 - [ ] Narration matches the fact-checked script
 - [ ] Names and numbers pronounced correctly
-- [ ] Final take selected (`voice select`)
-- [ ] Final take exported to `exports/`
+- [ ] Final voice-over file ready for editing

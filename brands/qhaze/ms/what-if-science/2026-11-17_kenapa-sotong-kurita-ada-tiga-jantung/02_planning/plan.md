@@ -8,7 +8,6 @@
 | Format | Short-form (9:16, 1080x1920) |
 | Target length | 60 s (allowed 15–90 s) |
 | Target words | ≈ 140 at 140 wpm |
-| Voice preset | male-storytelling |
 | Visual style | cinematic-explainer |
 
 ## Angle / hook

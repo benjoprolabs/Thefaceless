@@ -16,9 +16,6 @@ Thumbs.db
 *.flac
 *.ogg
 
-# Personal voice clones: consent forms, samples and voice IDs stay on this computer
-voice_library/clones/*
-!voice_library/clones/README.md
 
 # Secrets: API keys belong in environment variables, never in files
 .env

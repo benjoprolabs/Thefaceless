@@ -8,7 +8,6 @@
 | Format | {{format_label}} ({{aspect_ratio}}, {{resolution}}) |
 | Target length | {{target_seconds}} s (allowed {{min_seconds}}–{{max_seconds}} s) |
 | Target words | ≈ {{target_words}} at {{words_per_minute}} wpm |
-| Voice preset | {{voice_preset}} |
 | Visual style | {{visual_style}} |
 
 ## Angle / hook

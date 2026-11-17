@@ -1,11 +1,9 @@
 """End-to-end: the whole 10-stage workflow driven only through CLI commands."""
 
-import os
 import unittest
-from unittest import mock
 
 from factory.core.projects import find_project
-from tests.helpers import make_sandbox, make_wav, remove_sandbox, run_cli, tick_all
+from tests.helpers import make_sandbox, remove_sandbox, run_cli, tick_all
 
 SCRIPT = """# Script
 ## [SCENE 1] Hook
@@ -39,11 +37,18 @@ class TestCLIWorkflow(unittest.TestCase):
 
     def test_read_only_commands(self):
         for argv in (["dashboard"], ["niches"], ["niches", "show", "gaming"], ["ideas"],
-                     ["ideas", "--lang", "ms"], ["status"], ["library", "voices", "--lang", "ms"],
+                     ["ideas", "--lang", "ms"], ["status"],
                      ["library", "visuals", "--division", "gaming"], ["publish"], ["assets"],
-                     ["assets", "check"], ["voice", "engines"], ["voice", "presets"],
-                     ["voice", "list"], ["voice", "clone", "list"], ["analytics", "report"], []):
+                     ["assets", "check"], ["analytics", "report"], []):
             self.ok(*argv)
+
+    def test_voice_commands_removed(self):
+        from factory.cli import build_parser
+        commands = build_parser()._subparsers._group_actions[0].choices
+        self.assertNotIn("voice", commands)
+        self.assertEqual(sorted(commands), sorted([
+            "dashboard", "niches", "ideas", "script", "library", "new", "status",
+            "show", "advance", "publish", "analytics", "assets"]))
 
     def test_errors_are_friendly(self):
         self.assertIn("not found", self.bad("new", "--idea", "EN-999"))
@@ -75,19 +80,8 @@ class TestCLIWorkflow(unittest.TestCase):
         self.assertIn("OK", self.ok("script", "check", pid))
         self.ok("advance", pid)
 
-        # 5 Voice-over: TTS, record/import, trim, convert, select, export
-        self.ok("voice", "tts", pid, "--voice", "female-storytelling")
-        self.ok("voice", "import", pid, str(make_wav(self.tmp / "me.wav", 3)))
-        self.ok("voice", "trim", pid, "A002", "--start", "0.5")
-        self.ok("voice", "convert", pid, "A003", "--voice", "male-deep")
-        self.ok("voice", "tts", pid, "--engine", "elevenlabs", "--dry-run")
-        self.ctx.config.voice_presets["female-documentary"]["engine_voices"]["elevenlabs"]["voice_id"] = "V1"
-        with mock.patch("builtins.input", return_value="n"):
-            self.assertIn("Cancelled", self.bad("voice", "tts", pid, "--engine", "elevenlabs"))
-        self.ok("voice", "select", pid, "A001")
-        self.assertIn("A005 [export]", self.ok("voice", "export", pid))
-        listing = self.ok("voice", "list", pid)
-        self.assertIn("*A001", listing)
+        # 5 Voice-over: produced externally, manual checklist only
+        self.assertIn("spotlight effect", self.ok("script", "text", pid))
         tick_all(p.folder / "05_voice/voice.md")
         self.ok("advance", pid)
 
@@ -108,21 +102,6 @@ class TestCLIWorkflow(unittest.TestCase):
         show = self.ok("show", pid)
         self.assertEqual(show.count("✔"), 9)
         self.assertIn("10/10", self.ok("status"))
-
-    def test_clone_cli_flow(self):
-        out = self.ok("voice", "clone", "init", "me", "--owner", "Test Owner")
-        self.assertIn("consent.md", out)
-        consent = self.tmp / "voice_library/clones/me/consent.md"
-        consent.write_text(consent.read_text().replace("- [ ]", "- [x]").replace("Signed:", "Signed: Test Owner"))
-        self.ok("voice", "clone", "verify", "me", str(make_wav(self.tmp / "phrase.wav")))
-        self.ok("voice", "clone", "add-sample", "me", str(make_wav(self.tmp / "s.wav")))
-        self.ok("voice", "clone", "create", "me", "--engine", "mock")
-        self.assertIn("clone:me", self.ok("library", "voices"))
-        with mock.patch.dict(os.environ, {}, clear=True):
-            self.bad("voice", "clone", "create", "me", "--engine", "elevenlabs", "--yes")
-        with mock.patch("builtins.input", return_value=""):  # Enter = default No
-            self.bad("voice", "clone", "delete", "me")
-        self.ok("voice", "clone", "delete", "me", "--yes")
 
 
 if __name__ == "__main__":

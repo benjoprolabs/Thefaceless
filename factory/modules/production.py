@@ -12,8 +12,6 @@ from factory.core.projects import Project, find_project, iter_projects
 from factory.core.templates import render_template
 from factory.modules import ideas as ideas_mod
 
-AUDIO_SUBFOLDERS = ("raw", "edited", "tts", "converted", "exports")
-
 
 def template_values(ctx, brand, language, division, fmt, seconds, title, project_id, idea_id, created):
     brand_cfg = ctx.config.brand(brand)
@@ -30,7 +28,6 @@ def template_values(ctx, brand, language, division, fmt, seconds, title, project
         "max_seconds": spec["max_seconds"], "target_seconds": seconds,
         "words_per_minute": lang["words_per_minute"],
         "target_words": round(seconds / 60 * lang["words_per_minute"]),
-        "voice_preset": brand_cfg.get("default_voice_preset", {}).get(language, "female-documentary"),
     }
 
 
@@ -60,16 +57,12 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
         for name in stage["templates"]:
             text = render_template(ctx.paths, name, values, brand=brand, language=language)
             (stage_dir / name).write_text(text, encoding="utf-8")
-        if stage["id"] == "voice":
-            for sub in AUDIO_SUBFOLDERS:
-                (stage_dir / sub).mkdir()
-                (stage_dir / sub / ".gitkeep").touch()
 
     first = ctx.config.stages[0]["id"]
     project = Project(folder, {
         "id": project_id, "title": title, "brand": brand, "language": language,
         "division": division, "format": fmt, "target_seconds": seconds,
-        "idea_id": idea_id, "voice_preset": values["voice_preset"],
+        "idea_id": idea_id,
         "stage": first, "created": created,
         "history": [{"stage": first, "date": created}],
         "publications": [],
@@ -150,7 +143,7 @@ def cmd_show(args, ctx):
     print(f"{m['title']}  [{m['id']}]")
     print(f"  Folder   : {p.folder.relative_to(ctx.paths.root)}")
     print(f"  Brand    : {m['brand']}   Language: {m['language']}   Division: {m['division']}")
-    print(f"  Format   : {m['format']}, target {m['target_seconds']} s   Voice: {m['voice_preset']}")
+    print(f"  Format   : {m['format']}, target {m['target_seconds']} s")
     print("  Workflow :")
     current = ctx.config.stage_index(p.stage)
     for i, stage in enumerate(ctx.config.stages):

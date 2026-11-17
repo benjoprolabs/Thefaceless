@@ -33,15 +33,16 @@ class TestRepoData(unittest.TestCase):
             for name in stage["templates"]:
                 self.assertTrue((self.ctx.paths.templates / name).exists(), name)
 
-    def test_voice_presets(self):
-        presets = self.cfg.voice_presets
-        for gender in ("male", "female"):
-            for style in ("deep", "soft", "documentary", "storytelling"):
-                p = presets[f"{gender}-{style}"]
-                self.assertEqual(set(p["languages"]), {"en", "ms"})
+    def test_voice_studio_removed(self):
+        for path in ("factory/voice_studio", "voice_library", "templates/voice",
+                     "config/voice_presets.json", "config/voice_studio.json"):
+            self.assertFalse((ROOT / path).exists(), path)
+        self.assertNotIn("default_voice_preset", self.cfg.brand("qhaze"))
+        for p in iter_projects(self.ctx):
+            self.assertNotIn("voice_preset", p.meta)
+            self.assertFalse((p.folder / "05_voice" / "audio_log.json").exists())
 
-    def test_paid_api_calls_disabled_and_no_keys_in_repo(self):
-        self.assertFalse(self.cfg.voice_studio["engines"]["elevenlabs"]["calls_enabled"])
+    def test_no_api_keys_in_repo(self):
         key_like = re.compile(r"(sk_[a-f0-9]{20,}|xi-api-key\"\s*:\s*\"[a-f0-9]{20,})")
         for path in ROOT.rglob("*"):
             if ".git" in path.parts or not path.is_file() or path.suffix not in (".py", ".json", ".md", ".csv"):

@@ -19,8 +19,6 @@ class Paths:
         self.brands = self.root / "brands"
         self.assets = self.root / "assets"
         self.asset_register = self.assets / "register.csv"
-        self.voice_library = self.root / "voice_library"
-        self.clones = self.voice_library / "clones"
 
     # Brand / language locations -------------------------------------------
     def brand_dir(self, brand):
@@ -71,14 +69,6 @@ class Config:
     @property
     def visual_styles(self):
         return self._load("visual_styles")
-
-    @property
-    def voice_studio(self):
-        return self._load("voice_studio")
-
-    @property
-    def voice_presets(self):
-        return self._load("voice_presets")["presets"]
 
     def brand(self, brand_id=None):
         brand_id = brand_id or self.settings["default_brand"]

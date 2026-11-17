@@ -12,10 +12,9 @@ from factory import __version__
 from factory.core.config import Context, FactoryError
 from factory.modules import (analytics, assets, dashboard, ideas, library, niches,
                              production, publishing, scripts)
-from factory.voice_studio import cli as voice_cli
 
 MODULES = [dashboard, niches, ideas, scripts, library, production, publishing,
-           analytics, assets, voice_cli]
+           analytics, assets]
 
 
 def build_parser():

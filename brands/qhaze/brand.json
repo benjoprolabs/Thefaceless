@@ -6,6 +6,5 @@
   "channels": [
     {"id": "qhaze-en", "name": "QHAZE", "language": "en", "platforms": ["youtube", "youtube_shorts", "tiktok"]},
     {"id": "qhaze-ms", "name": "QHAZE Melayu", "language": "ms", "platforms": ["youtube", "youtube_shorts", "tiktok"]}
-  ],
-  "default_voice_preset": {"en": "female-documentary", "ms": "male-storytelling"}
+  ]
 }

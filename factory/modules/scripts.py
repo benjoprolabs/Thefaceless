@@ -31,7 +31,7 @@ def parse_scenes(text):
 
 
 def spoken_text(narration):
-    """Narration without claim markers, ready for TTS."""
+    """Narration without claim markers (the words to be spoken)."""
     return re.sub(r"\s+", " ", re.sub(r"\s*\[F\d+\]", "", narration)).strip()
 
 
@@ -128,7 +128,7 @@ def register(sub):
     c = s.add_parser("check", help="length, empty scenes and fact-check coverage")
     c.add_argument("project")
     c.set_defaults(func=cmd_check)
-    t = s.add_parser("text", help="print the narration only (what TTS will read)")
+    t = s.add_parser("text", help="print the narration only (for recording or reading aloud)")
     t.add_argument("project")
     t.set_defaults(func=cmd_text)
     sl = s.add_parser("shotlist", help="create shot list rows from script scenes")

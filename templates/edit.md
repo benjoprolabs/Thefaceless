@@ -4,7 +4,7 @@
 - **Timeline:** {{resolution}} ({{aspect_ratio}}), 30 fps
 
 ## Stage checklist
-- [ ] Final voice-over from `05_voice/exports/` on the timeline
+- [ ] Final voice-over on the timeline
 - [ ] Every shot list scene placed
 - [ ] Music under voice (−20 to −25 dB), licence recorded
 - [ ] Brand intro/outro and watermark from `assets/brand/`
