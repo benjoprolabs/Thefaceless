@@ -1,12 +1,18 @@
-"""Module 3: Idea Manager. Per-language idea backlogs (brands/<brand>/<lang>/ideas.csv)."""
+"""Module 3: Idea Manager. Per-language idea backlogs (brands/<brand>/<lang>/ideas.csv).
+
+The CSV files may be edited in Excel; see core/files.py for how that is handled.
+"""
+
+import re
 
 from factory.core.config import FactoryError
-from factory.core.files import append_csv, read_csv, today, write_csv
+from factory.core.files import append_csv, read_csv_table, require_columns, to_float, today, write_csv
 from factory.core.options import (add_brand, add_division, add_language, brand_id,
                                   check_division, check_format, check_language)
 
 FIELDS = ["id", "title", "division", "format", "demand", "competition", "effort",
           "score", "status", "project_id", "created"]
+REQUIRED = ["id", "title", "division", "format", "status", "project_id"]
 
 
 def score(demand, competition, effort):
@@ -15,7 +21,17 @@ def score(demand, competition, effort):
 
 
 def load_ideas(ctx, brand, language):
-    return read_csv(ctx.paths.ideas_csv(brand, language))
+    path = ctx.paths.ideas_csv(brand, language)
+    header, rows = read_csv_table(path)
+    if header:
+        require_columns(path, header, REQUIRED)
+    return [r for r in rows if r.get("id")]  # rows without an ID are ignored
+
+
+def idea_number(idea_id, prefix):
+    """EN-007 → 7. Returns None for IDs that don't follow the pattern."""
+    m = re.fullmatch(rf"{prefix}-(\d+)", idea_id.strip(), re.IGNORECASE)
+    return int(m.group(1)) if m else None
 
 
 def find_idea(ctx, brand, idea_id):
@@ -36,7 +52,7 @@ def add_idea(ctx, brand, language, title, division, fmt, demand, competition, ef
             raise FactoryError("demand, competition and effort must be 1–5")
     ideas = load_ideas(ctx, brand, language)
     prefix = language.upper()
-    numbers = [int(i["id"].split("-")[1]) for i in ideas if i["id"].startswith(prefix + "-")]
+    numbers = [n for n in (idea_number(i["id"], prefix) for i in ideas) if n is not None]
     idea = {
         "id": f"{prefix}-{max(numbers, default=0) + 1:03d}", "title": title, "division": division,
         "format": fmt, "demand": demand, "competition": competition, "effort": effort,
@@ -49,7 +65,7 @@ def add_idea(ctx, brand, language, title, division, fmt, demand, competition, ef
 
 def link_project(ctx, brand, language, idea_id, project_id):
     path = ctx.paths.ideas_csv(brand, language)
-    ideas = read_csv(path)
+    ideas = load_ideas(ctx, brand, language)
     for idea in ideas:
         if idea["id"] == idea_id:
             idea["status"] = "in_production"
@@ -65,8 +81,8 @@ def cmd_list(args, ctx):
         if getattr(args, "division", None):
             ideas = [i for i in ideas if i["division"] == args.division]
         print(f"== {ctx.config.languages[language]['name']} ({len(ideas)} ideas) ==")
-        for i in sorted(ideas, key=lambda i: float(i["score"] or 0), reverse=True):
-            print(f"  {i['id']:<7} {i['score']:>4}  {i['status']:<14} {i['division']:<18} {i['format']:<5} {i['title']}")
+        for i in sorted(ideas, key=lambda i: to_float(i.get("score")), reverse=True):
+            print(f"  {i['id']:<7} {i.get('score', ''):>4}  {i['status']:<14} {i['division']:<18} {i['format']:<5} {i['title']}")
     return 0
 
 

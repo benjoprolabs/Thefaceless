@@ -25,6 +25,7 @@ def overview(ctx, brand):
         "ready_to_advance": [p.id for p in projects
                              if p.stage != ctx.config.stages[-1]["id"] and not stage_blockers(ctx, p)],
         "asset_problems": len(check_assets(ctx)),
+        "damaged_projects": len(ctx.warnings),
     }
 
 
@@ -48,6 +49,7 @@ def cmd_dashboard(args, ctx):
     print(f"  Ready to advance (checklist done): {', '.join(o['ready_to_advance']) or 'none'}")
     print(f"  Stages skipped with --force     : {', '.join(o['forced']) or 'none'}")
     print(f"  Asset register problems         : {o['asset_problems']}")
+    print(f"  Damaged projects (skipped)      : {o['damaged_projects']}")
     return 0
 
 

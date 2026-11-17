@@ -1,0 +1,8 @@
+{
+  "youtube":         {"label": "YouTube",          "domains": ["youtube.com", "youtu.be"]},
+  "youtube_shorts":  {"label": "YouTube Shorts",   "domains": ["youtube.com", "youtu.be"]},
+  "tiktok":          {"label": "TikTok",           "domains": ["tiktok.com"]},
+  "instagram_reels": {"label": "Instagram Reels",  "domains": ["instagram.com"]},
+  "facebook":        {"label": "Facebook",         "domains": ["facebook.com", "fb.watch"]},
+  "facebook_reels":  {"label": "Facebook Reels",   "domains": ["facebook.com", "fb.watch"]}
+}

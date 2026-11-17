@@ -126,12 +126,13 @@ class TestAssetsPublishingAnalytics(Base):
     def test_publish_requires_stage_then_analytics_report(self):
         p = self.new()
         with self.assertRaises(FactoryError):
-            publishing.record_publication(self.ctx, p, "youtube", "https://example.com")
+            publishing.record_publication(self.ctx, p, "youtube", "https://youtu.be/abc")
         while p.stage != "publish":
             advance(self.ctx, p, force=True)
-        publishing.record_publication(self.ctx, p, "youtube_shorts", "https://example.com", "2026-01-05")
+        publishing.record_publication(self.ctx, p, "youtube_shorts", "https://youtube.com/shorts/x", "2026-01-05")
+        publishing.record_publication(self.ctx, p, "tiktok", "https://www.tiktok.com/@q/video/1", "2026-01-05")
         with self.assertRaises(FactoryError):
-            publishing.record_publication(self.ctx, p, "myspace", "https://example.com")
+            publishing.record_publication(self.ctx, p, "myspace", "https://myspace.com/x")
         analytics.add_snapshot(self.ctx, p, "youtube_shorts", views=100, likes=5)
         analytics.add_snapshot(self.ctx, p, "youtube_shorts", views=250, likes=9)  # newer snapshot wins
         analytics.add_snapshot(self.ctx, p, "tiktok", views=50)

@@ -4,16 +4,19 @@ from factory.core.config import FactoryError
 from factory.core.files import today
 from factory.core.options import add_brand, add_language, brand_id
 from factory.core.projects import find_project, iter_projects
-
-PLATFORMS = ("youtube", "youtube_shorts", "tiktok", "instagram_reels", "facebook", "facebook_reels")
+from factory.core.validation import check_date, check_platform, check_url
 
 
 def record_publication(ctx, project, platform, url, date=None):
-    if platform not in PLATFORMS:
-        raise FactoryError(f"Platform must be one of: {', '.join(PLATFORMS)}")
+    platform = check_platform(ctx, platform)
+    url = check_url(ctx, url, platform)
+    date = check_date(date) if date else today()
     if ctx.config.stage_index(project.stage) < ctx.config.stage_index("publish"):
         raise FactoryError("Project has not reached the Publishing stage yet.")
-    pub = {"platform": platform, "url": url, "date": date or today()}
+    for pub in project.meta.get("publications", []):
+        if pub["url"].rstrip("/") == url.rstrip("/"):
+            raise FactoryError(f"This URL is already recorded for {project.id} ({pub['platform']}, {pub['date']})")
+    pub = {"platform": platform, "url": url, "date": date}
     project.meta.setdefault("publications", []).append(pub)
     project.save()
     return pub
@@ -57,7 +60,7 @@ def register(sub):
     ls.set_defaults(func=cmd_list)
     r = s.add_parser("record", help="record a publication")
     r.add_argument("project")
-    r.add_argument("--platform", required=True, choices=PLATFORMS)
-    r.add_argument("--url", required=True)
+    r.add_argument("--platform", required=True, help="see config/platforms.json, e.g. youtube, tiktok")
+    r.add_argument("--url", required=True, help="full link, e.g. https://www.youtube.com/watch?v=...")
     r.add_argument("--date", help="YYYY-MM-DD (default today)")
     r.set_defaults(func=cmd_record)

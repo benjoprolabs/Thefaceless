@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 1 (v0.3.0). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 1 (v0.3.1). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -65,7 +65,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
 | 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` · `status` · `show P` · `advance P [--force]` |
-| 7 Publishing Manager | `publish` · `publish record P --platform youtube --url URL` |
+| 7 Publishing Manager | `publish` · `publish record P --platform youtube --url https://youtu.be/...` |
 | 8 Analytics | `analytics add P --platform youtube --views 1200 --likes 80 ...` · `analytics report` |
 | 9 Asset Manager | `assets` · `assets add FILE --type music --source "..." --license "..."` · `assets check` |
 
@@ -102,9 +102,30 @@ docs/            Architecture
 python3 -m unittest discover -s tests -v
 ```
 
-29 tests, no network needed.
+58 tests, no network needed.
+
+## Editing CSV files in Excel
+
+Idea lists (`ideas.csv`), shot lists and the asset register can be opened and saved in Excel,
+including with `;` separators or Windows encodings. Keep the first row (column names) unchanged.
+The next time the tool writes the file, it is saved back as a standard CSV.
+
+## Publishing and analytics rules
+
+- Platforms: `youtube`, `youtube_shorts`, `tiktok`, `instagram_reels`, `facebook`, `facebook_reels`
+  (see `config/platforms.json`; names are not case-sensitive).
+- URLs must be full links on that platform, e.g. `https://www.tiktok.com/@qhaze/video/...`.
+- Analytics can only be logged for a platform the video was recorded as published on.
+
+## If a project is damaged
+
+If a `project.json` file can't be read, commands keep working, skip that project and print
+`Warning: Skipped damaged project ...` with the reason. Fix or restore that file (e.g. with
+`git checkout -- <path>`) to bring the project back.
 
 ## Media files
 
-Video and audio (`.mp4`, `.wav`, `.mp3`, `.m4a`, …) are git-ignored because of their size.
-Keep them in the project folders on your computer or a cloud drive.
+Video, image, audio and design files (`.mp4`, `.webm`, `.avi`, `.png`, `.jpg`, `.psd`, `.wav`, …)
+are git-ignored because of their size, in upper or lower case. Keep them in the project folders on
+your computer or a cloud drive. To commit one specific file (e.g. a small logo), add an exception
+line such as `!assets/brand/logo.png` to `.gitignore`.

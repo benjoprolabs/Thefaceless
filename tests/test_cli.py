@@ -91,7 +91,7 @@ class TestCLIWorkflow(unittest.TestCase):
         for stage_file in ("06_visuals/visuals.md", "07_edit/edit.md", "08_qc/qc.md"):
             tick_all(p.folder / stage_file)
             self.ok("advance", pid)
-        self.ok("publish", "record", pid, "--platform", "youtube_shorts", "--url", "https://example.com/v")
+        self.ok("publish", "record", pid, "--platform", "youtube_shorts", "--url", "https://youtube.com/shorts/abc123")
         tick_all(p.folder / "09_publish/publish.md")
         self.ok("advance", pid)
 

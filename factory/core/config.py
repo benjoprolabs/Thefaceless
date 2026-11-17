@@ -6,6 +6,7 @@ in exactly one place. Tests pass a temporary root to `Paths`.
 
 from pathlib import Path
 
+from factory.core.errors import FactoryError  # noqa: F401  (re-exported)
 from factory.core.files import read_json
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -67,6 +68,10 @@ class Config:
         return self._load("pipeline")["stages"]
 
     @property
+    def platforms(self):
+        return self._load("platforms")
+
+    @property
     def visual_styles(self):
         return self._load("visual_styles")
 
@@ -90,13 +95,12 @@ class Config:
         return [s["id"] for s in self.stages].index(stage_id)
 
 
-class FactoryError(Exception):
-    """A user-facing error: the CLI prints the message and exits with code 1."""
-
-
 class Context:
     """Bundle passed to every command: paths + config."""
 
     def __init__(self, root=ROOT):
         self.paths = Paths(root)
         self.config = Config(self.paths)
+        # Non-fatal problems found while running a command (e.g. damaged projects).
+        # Keyed by file path so each problem is reported once.
+        self.warnings = {}

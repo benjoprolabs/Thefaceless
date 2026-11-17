@@ -2,9 +2,11 @@
 
 from collections import defaultdict
 
+from factory.core.config import FactoryError
 from factory.core.files import append_csv, csv_header, read_csv, today
 from factory.core.options import add_brand, add_language, brand_id
 from factory.core.projects import find_project, iter_projects
+from factory.core.validation import check_number, check_platform
 
 NUMERIC = ("views", "watch_time_hours", "likes", "comments", "shares", "subscribers_gained")
 
@@ -13,7 +15,23 @@ def perf_path(ctx, project):
     return project.stage_dir(ctx, "analytics") / "performance.csv"
 
 
+LIMITS = {"ctr_percent": 100}  # every metric must be >= 0; these also have a maximum
+FLAGS = {"views": "views", "watch_time_hours": "watch-hours", "avg_view_duration_sec": "avg-view-sec",
+         "ctr_percent": "ctr", "likes": "likes", "comments": "comments", "shares": "shares",
+         "subscribers_gained": "subs", "days_since_publish": "days"}
+
+
 def add_snapshot(ctx, project, platform, **metrics):
+    """Log metrics for a platform the project has actually been published on."""
+    platform = check_platform(ctx, platform)
+    published = {pub["platform"] for pub in project.meta.get("publications", [])}
+    if platform not in published:
+        known = ", ".join(sorted(published)) or "none yet"
+        raise FactoryError(f"{project.id} has no publication recorded on '{platform}' "
+                           f"(recorded: {known}). Record it first with: publish record")
+    for name, value in metrics.items():
+        if isinstance(value, (int, float)):
+            check_number(FLAGS.get(name, name), value, 0, LIMITS.get(name))
     path = perf_path(ctx, project)
     fields = csv_header(path)
     row = {f: "" for f in fields}

@@ -21,8 +21,9 @@ def brand_id(args, ctx):
 
 
 def check_language(ctx, language):
-    if language and language not in ctx.config.languages:
-        raise FactoryError(f"Unknown language '{language}'. Choose: {', '.join(ctx.config.languages)}")
+    if language is not None and language not in ctx.config.languages:
+        names = ", ".join(f"{code} ({info['name']})" for code, info in ctx.config.languages.items())
+        raise FactoryError(f"Unknown language '{language}'. Use one of: {names}")
     return language
 
 

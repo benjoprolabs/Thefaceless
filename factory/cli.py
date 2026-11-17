@@ -10,6 +10,7 @@ import sys
 
 from factory import __version__
 from factory.core.config import Context, FactoryError
+from factory.core.options import check_language
 from factory.modules import (analytics, assets, dashboard, ideas, library, niches,
                              production, publishing, scripts)
 
@@ -32,8 +33,15 @@ def main(argv=None, ctx=None):
     if not getattr(args, "func", None):
         parser.print_help()
         return 0
+    ctx = ctx or Context()
     try:
-        return args.func(args, ctx or Context())
+        # Validate --lang once for every command that has it (EN → en).
+        if getattr(args, "lang", None) is not None:
+            args.lang = check_language(ctx, args.lang.strip().lower())
+        return args.func(args, ctx)
     except FactoryError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
+    finally:
+        for warning in ctx.warnings.values():
+            print(f"Warning: {warning}", file=sys.stderr)

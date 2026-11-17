@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.3.0 · **Phase:** 1 (Python CLI, local files)
+**Version:** 0.3.1 · **Phase:** 1 (Python CLI, local files)
 
 ---
 
@@ -32,6 +32,7 @@ across several content divisions, in **English and Bahasa Melayu**, for one or m
 | Formats | Short-form 15–90 s (9:16) · Long-form 5–20 min (16:9) | `config/formats.json` |
 | Workflow | 10 stages (below) | `config/pipeline.json` |
 | Visual styles | One per division | `config/visual_styles.json` |
+| Platforms | YouTube, YouTube Shorts, TikTok, Instagram Reels, Facebook, Facebook Reels + their web domains | `config/platforms.json` |
 | Defaults | default brand / language | `config/settings.json` |
 
 Each division carries **rules** (e.g. affiliate disclosure, "label speculation") that are
@@ -148,13 +149,15 @@ A new brand or language can restyle any template without code changes.
 ```
 factory/
 ├── __main__.py          python -m factory
-├── cli.py               Builds the parser from MODULES; prints FactoryError nicely
+├── cli.py               Builds the parser from MODULES; validates --lang; prints errors and warnings
 ├── core/
-│   ├── config.py        Paths (all locations), Config (cached JSON), Context, FactoryError
-│   ├── files.py         JSON/CSV helpers, sha256, slugify, checklist parsing, private files
+│   ├── errors.py        FactoryError (user-facing error)
+│   ├── config.py        Paths (all locations), Config (cached JSON), Context (+ warnings)
+│   ├── files.py         JSON helpers, Excel-tolerant CSV reading, slugify, checklist parsing
 │   ├── templates.py     {{placeholder}} rendering + override lookup
-│   ├── projects.py      Project model, iter_projects, find_project
-│   └── options.py       Shared CLI options and validation (brand, language, division, format)
+│   ├── projects.py      Project model, damaged-project detection, iter_projects, find_project
+│   ├── options.py       Shared CLI options and validation (brand, language, division, format)
+│   └── validation.py    Platform, URL, date and number validation
 └── modules/             Modules 1–9 (one file each)
 ```
 
@@ -178,11 +181,23 @@ factory/
 
 **Idea score:** `(demand×2 + (6−competition) + (6−effort)) / 4` → 1.0–5.0.
 
+### Robustness rules
+
+| Situation | Behaviour |
+|-----------|-----------|
+| CSV saved by Excel: UTF-8 BOM, Windows (cp1252) encoding, `;` separators, padded headers, blank rows, short rows | Read correctly. When the tool writes the file (e.g. `ideas add`), it is rewritten as standard UTF-8 comma-separated CSV; extra user columns are kept |
+| Idea list missing a required column | Clear error naming the file and the expected first row |
+| Non-numeric score (e.g. `#VALUE!`) or malformed idea ID | Treated as 0 / ignored for numbering; never crashes |
+| Damaged `project.json` (invalid JSON, not an object, missing fields, unknown stage/language/format) | Project skipped; `Warning: Skipped damaged project <path>: <reason>` printed after the command; dashboard shows a count; the folder can't be overwritten by `new` |
+| Unknown `--lang` (any command) | Error listing valid languages; input is case-insensitive (`MS` → `ms`) |
+| `publish record` | Platform must be in `config/platforms.json` (case-insensitive); URL must be a full `http(s)://` link on that platform's domain; date `YYYY-MM-DD`, not in the future; the same URL can't be recorded twice |
+| `analytics add` | Platform must be known **and** already recorded as a publication of that project; all numbers ≥ 0; CTR 0–100 |
+
 ---
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (29 tests, < 1 s, no network).
+`python -m unittest discover -s tests -v` (58 tests, < 1 s, no network).
 
 | File | Covers |
 |------|--------|
@@ -190,10 +205,12 @@ factory/
 | `test_repo_data.py` | committed config matches the strategy; sample project complete; no API keys in repo; Voice Studio fully removed |
 | `test_modules.py` | modules 1–9: project creation, EN/MS separation, format limits, stage gates, ideas, script analysis, assets, publishing, analytics, dashboard |
 | `test_cli.py` | complete 10-stage workflow through CLI commands only; command list |
+| `test_audit_fixes.py` | Excel CSV handling, damaged projects, `.gitignore` media rules, `--lang` validation, platform/URL/date/number validation |
 
 ---
 
 ## 8. Roadmap
 
-Development is paused after the v0.3.0 scope reset (Voice Studio removed).
+Development is paused after the v0.3.0 scope reset (Voice Studio removed) and the
+v0.3.1 audit fixes.
 The next phase will be decided and approved separately.

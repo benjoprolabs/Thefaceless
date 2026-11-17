@@ -54,12 +54,12 @@
   "publications": [
     {
       "platform": "youtube_shorts",
-      "url": "https://example.com/sample-short",
+      "url": "https://www.youtube.com/shorts/SAMPLE-ONLY",
       "date": "2026-11-20"
     },
     {
       "platform": "tiktok",
-      "url": "https://example.com/sample-tiktok",
+      "url": "https://www.tiktok.com/@qhaze/video/SAMPLE-ONLY",
       "date": "2026-11-20"
     }
   ],

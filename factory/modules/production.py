@@ -47,6 +47,8 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
     if any(p.id == project_id for p in iter_projects(ctx, brand=brand)):
         raise FactoryError(f"Project already exists: {project_id}")
     folder = ctx.paths.division_dir(brand, language, division) / project_id
+    if folder.exists():
+        raise FactoryError(f"Folder already exists: {folder.relative_to(ctx.paths.root)}")
 
     values = template_values(ctx, brand, language, division, fmt, seconds, title,
                              project_id, idea_id, created)
