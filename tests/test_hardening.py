@@ -200,7 +200,7 @@ class TestCopiedOrMisplacedProjects(Base):
         shutil.copytree(self.p.folder, dest)
         code, out = self.cli("status")
         self.assertIn("it says division 'psychology' but is stored in the 'gaming' folder", out)
-        self.assertEqual(out.count("2026-01-01_main-project"), 2)  # once in the list, once in the warning
+        self.assertEqual(out.count("2026-01-01_en_main-project"), 2)  # once in the list, once in the warning
         self.assertEqual(analytics.report(self.ctx, "qhaze")["projects"][0]["views"], 1000)
         self.assertEqual(len(analytics.report(self.ctx, "qhaze")["projects"]), 1)
 
@@ -212,9 +212,9 @@ class TestCopiedOrMisplacedProjects(Base):
         (dest / "project.json").write_text(json.dumps(meta))
         code, out = self.cli("status")
         self.assertEqual(code, 0, out)
-        self.assertIn("Skipped duplicate project id '2026-01-01_main-project' found in", out)
-        self.assertIn("brands/qhaze/en/gaming/2026-01-01_main-project", out)
-        self.assertIn("brands/qhaze/en/psychology/2026-01-01_main-project", out)
+        self.assertIn("Skipped duplicate project id '2026-01-01_en_main-project' found in", out)
+        self.assertIn("brands/qhaze/en/gaming/2026-01-01_en_main-project", out)
+        self.assertIn("brands/qhaze/en/psychology/2026-01-01_en_main-project", out)
         self.assertEqual(analytics.report(self.ctx, "qhaze")["projects"], [])  # nothing counted twice
         self.assertEqual(list(iter_projects(self.ctx, division="psychology")), [])  # found even when filtered
         with self.assertRaises(FactoryError) as e:
@@ -222,9 +222,9 @@ class TestCopiedOrMisplacedProjects(Base):
         self.assertIn("damaged or duplicated", str(e.exception))
 
     def test_copy_in_same_division_with_new_folder_name(self):
-        shutil.copytree(self.p.folder, self.p.folder.with_name("2026-01-01_main-project-copy"))
+        shutil.copytree(self.p.folder, self.p.folder.with_name("2026-01-01_en_main-project-copy"))
         code, out = self.cli("status")
-        self.assertIn("doesn't match the folder name '2026-01-01_main-project-copy'", out)
+        self.assertIn("doesn't match the folder name '2026-01-01_en_main-project-copy'", out)
         self.assertEqual(len(analytics.report(self.ctx, "qhaze")["projects"]), 1)
 
     def test_language_mismatch_detected(self):
@@ -233,7 +233,7 @@ class TestCopiedOrMisplacedProjects(Base):
         shutil.move(str(self.p.folder), str(dest))
         for argv in (["status", "--lang", "ms"], ["status", "--lang", "en"]):
             code, out = self.cli(*argv)
-            self.assertNotIn("2026-01-01_main-project       ", out)
+            self.assertNotIn("2026-01-01_en_main-project       ", out)
             self.assertIn("it says language 'en' but is stored in the 'ms' folder", out)
             self.assertIn("move it to brands/qhaze/en/psychology/", out)
 
@@ -312,8 +312,8 @@ class TestVoiceLeftoversRemoved(unittest.TestCase):
         for name in ("sha256", "make_private"):
             self.assertFalse(hasattr(files, name), name)
         source = (ROOT / "factory/core/files.py").read_text(encoding="utf-8")
-        self.assertNotIn("import hashlib", source)
         self.assertNotIn("private", source)
+        self.assertNotIn("def sha256", source)  # hashlib is now used only for title fingerprints
 
 
 if __name__ == "__main__":

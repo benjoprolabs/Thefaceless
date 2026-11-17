@@ -22,7 +22,7 @@ class Base(unittest.TestCase):
 class TestProduction(Base):
     def test_create_builds_10_stage_folders_in_language_division_path(self):
         p = self.new()
-        self.assertEqual(p.folder, self.tmp / "brands/qhaze/en/psychology/2026-01-01_test-video")
+        self.assertEqual(p.folder, self.tmp / "brands/qhaze/en/psychology/2026-01-01_en_test-video")
         for stage in self.ctx.config.stages:
             self.assertTrue((p.folder / stage["folder"]).is_dir(), stage["id"])
         self.assertEqual([f.name for f in (p.folder / "05_voice").iterdir()], ["voice.md"])

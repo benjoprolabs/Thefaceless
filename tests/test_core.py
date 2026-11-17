@@ -14,6 +14,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(slugify("Why Octopuses Have 3 Hearts?!"), "why-octopuses-have-3-hearts")
         self.assertEqual(slugify("Kenapa sotong ada 3 jantung"), "kenapa-sotong-ada-3-jantung")
         self.assertEqual(slugify("!!!"), "untitled")
+        self.assertEqual(slugify("Café crème"), "cafe-creme")
 
     def test_unchecked_items(self):
         text = "- [ ] one\n- [x] two\n  * [ ] three\n- [X] four"

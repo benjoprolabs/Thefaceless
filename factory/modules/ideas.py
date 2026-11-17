@@ -73,6 +73,44 @@ def link_project(ctx, brand, language, idea_id, project_id):
     write_csv(path, ideas, FIELDS)
 
 
+def project_folder_names(ctx, brand):
+    """Names of every project folder in the brand, valid or damaged."""
+    return {p.name for p in ctx.paths.brand_dir(brand).glob("*/*/*") if p.is_dir()}
+
+
+def linked_project_missing(ctx, brand, idea, folder_names=None):
+    """True if the idea points to a project that no longer exists anywhere."""
+    project_id = idea.get("project_id", "").strip()
+    if not project_id:
+        return False
+    names = project_folder_names(ctx, brand) if folder_names is None else folder_names
+    return project_id not in names
+
+
+def unlink_idea(ctx, brand, idea_id):
+    """Put an idea back in the backlog after its project was deleted.
+
+    Refused if the project (or any folder with its ID, even a damaged one)
+    still exists, so a working project can never lose its idea link. Only
+    this idea's 'status' and 'project_id' change; other rows and columns are
+    kept. Returns (language, idea_id, old_project_id, old_status)."""
+    language, idea = find_idea(ctx, brand, idea_id)
+    old_project = idea["project_id"].strip()
+    if not old_project:
+        raise FactoryError(f"Idea {idea['id']} is not linked to a project (status: {idea['status']})")
+    if not linked_project_missing(ctx, brand, idea):
+        raise FactoryError(f"Idea {idea['id']} is linked to {old_project}, which still exists. "
+                           "Unlinking is only allowed after the project folder has been deleted.")
+    path = ctx.paths.ideas_csv(brand, language)
+    ideas = load_ideas(ctx, brand, language)
+    for row in ideas:
+        if row["id"].lower() == idea["id"].lower() and row["project_id"].strip() == old_project:
+            row["status"] = "backlog"
+            row["project_id"] = ""
+    write_csv(path, ideas, FIELDS)
+    return language, idea["id"], old_project, idea["status"]
+
+
 def cmd_list(args, ctx):
     brand = brand_id(args, ctx)
     languages = [check_language(ctx, args.lang)] if getattr(args, "lang", None) else list(ctx.config.languages)
@@ -81,8 +119,20 @@ def cmd_list(args, ctx):
         if getattr(args, "division", None):
             ideas = [i for i in ideas if i["division"] == args.division]
         print(f"== {ctx.config.languages[language]['name']} ({len(ideas)} ideas) ==")
+        folders = project_folder_names(ctx, brand)
         for i in sorted(ideas, key=lambda i: to_float(i.get("score")), reverse=True):
             print(f"  {i['id']:<7} {i.get('score', ''):>4}  {i['status']:<14} {i['division']:<18} {i['format']:<5} {i['title']}")
+            if linked_project_missing(ctx, brand, i, folders):
+                print(f"          ⚠ linked project {i['project_id']} not found. If it was deleted, run: "
+                      f"python -m factory ideas unlink {i['id']}")
+    return 0
+
+
+def cmd_unlink(args, ctx):
+    language, idea_id, old_project, old_status = unlink_idea(ctx, brand_id(args, ctx), args.idea)
+    print(f"Unlinked {idea_id} from deleted project {old_project}; status {old_status} → backlog.")
+    print(f"(To undo, set project_id back to {old_project} in "
+          f"brands/{brand_id(args, ctx)}/{language}/ideas.csv)")
     return 0
 
 
@@ -114,3 +164,7 @@ def register(sub):
     for name in ("demand", "competition", "effort"):
         ad.add_argument(f"--{name}", type=int, default=3, help="1–5")
     ad.set_defaults(func=cmd_add)
+    un = s.add_parser("unlink", help="return an idea to the backlog after its project was deleted")
+    un.add_argument("idea", help="idea ID, e.g. EN-002")
+    add_brand(un)
+    un.set_defaults(func=cmd_unlink)

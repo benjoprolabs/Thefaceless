@@ -150,7 +150,7 @@ class TestFriendlyFileErrors(Base):
         with mock.patch.object(Path, "read_bytes", fail_on_locked):
             code, out = self.cli("status")
         self.assertEqual(code, 0, out)
-        self.assertIn("2026-01-01_fine", out)
+        self.assertIn("2026-01-01_en_fine", out)
         self.assertIn("Skipped damaged project", out)
         self.assertIn("permission denied (your account can't read this file)", out)
 
@@ -236,7 +236,7 @@ class TestPythonCompatibility(unittest.TestCase):
     def test_only_standard_library_imports(self):
         stdlib = {"argparse", "ast", "builtins", "collections", "contextlib", "csv", "datetime", "errno",
                   "fnmatch", "hashlib", "io", "json", "os", "pathlib", "re", "shutil", "stat", "subprocess",
-                  "sys", "tempfile", "unittest", "urllib"}
+                  "sys", "tempfile", "unicodedata", "unittest", "urllib"}
         for path in self.FILES:
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 names = []

@@ -1,9 +1,11 @@
 """Small file helpers shared by all modules."""
 
 import csv
+import hashlib
 import io
 import json
 import re
+import unicodedata
 from datetime import date
 
 from factory.core.errors import FactoryError
@@ -13,9 +15,44 @@ def today():
     return date.today().isoformat()
 
 
+# Letters that Unicode does not decompose into "base letter + accent".
+EXTRA_LATIN = str.maketrans({"ß": "ss", "æ": "ae", "Æ": "AE", "œ": "oe", "Œ": "OE", "ø": "o", "Ø": "O",
+                             "đ": "d", "Đ": "D", "ł": "l", "Ł": "L", "þ": "th", "Þ": "TH", "ð": "d",
+                             "ı": "i", "ŋ": "ng"})
+
+
+def _to_ascii(char):
+    """'é' → 'e', 'ß' → 'ss'; characters with no Latin equivalent → ''."""
+    decomposed = unicodedata.normalize("NFKD", char.translate(EXTRA_LATIN))
+    return "".join(c for c in decomposed if c.isascii())
+
+
 def slugify(text, max_len=50):
-    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    """ASCII slug: accents removed ('Café crème' → 'cafe-creme'). Returns
+    'untitled' if nothing is left; use title_slug() for project IDs."""
+    ascii_text = "".join(_to_ascii(c) for c in text)
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
     return slug[:max_len].rstrip("-") or "untitled"
+
+
+def title_slug(title, max_len=50):
+    """Slug for a project ID that keeps different titles apart.
+
+    Latin titles (with or without accents) become a readable slug. If the
+    title has letters or digits that can't be written in Latin letters (Jawi,
+    Arabic, Chinese...), a short fingerprint of the full title is added, e.g.
+    'jawi-3f9a2c' or 'sejarah-3f9a2c', so two different titles never get the
+    same slug. The same title always gives the same slug."""
+    title = unicodedata.normalize("NFC", title.strip())
+    untranslatable = [c for c in title if unicodedata.category(c)[0] in "LN" and not _to_ascii(c).strip()]
+    slug = slugify(title, max_len)
+    if not untranslatable and slug != "untitled":
+        return slug
+    tag = hashlib.sha1(title.casefold().encode("utf-8")).hexdigest()[:6]
+    if slug != "untitled":
+        return f"{slug[:max_len - 7].rstrip('-')}-{tag}"
+    script = "jawi" if any(unicodedata.name(c, "").startswith("ARABIC") for c in untranslatable) else "title"
+    return f"{script}-{tag}"
 
 
 def read_json(path):
@@ -115,8 +152,14 @@ def to_float(value, default=0.0):
 
 
 UNCHECKED = re.compile(r"^\s*[-*]\s+\[ \]\s+(.*)$", re.MULTILINE)
+CHECKLIST_ITEM = re.compile(r"^\s*[-*]\s+\[[ xX]\]\s+", re.MULTILINE)
 
 
 def unchecked_items(text):
     """Return the text of every unticked '- [ ]' checklist item."""
     return [m.strip() for m in UNCHECKED.findall(text)]
+
+
+def has_checklist(text):
+    """True if the text contains at least one '- [ ]' or '- [x]' item."""
+    return bool(CHECKLIST_ITEM.search(text))

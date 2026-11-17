@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 1 (v0.3.3). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 1 (v0.3.4). Voice Studio was removed in a scope reset; development is paused pending approval of the next phase. Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -65,7 +65,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 |--------|----------|
 | 1 Dashboard | `dashboard` |
 | 2 Niche Manager | `niches` · `niches show <division>` |
-| 3 Idea Manager | `ideas [--lang en\|ms] [--division ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` |
+| 3 Idea Manager | `ideas [--lang en\|ms] [--division ...]` · `ideas add "Title" --lang ms --division gaming --format short --demand 4 --competition 2 --effort 2` · `ideas unlink EN-002` (after its project was deleted) |
 | 4 Script Studio | `script check P` · `script text P` · `script shotlist P` |
 | 5 Visual Library | `library visuals [--division ...]` |
 | 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `advance P [--force]` |
@@ -106,7 +106,7 @@ docs/            Architecture
 python3 -m unittest discover -s tests -v
 ```
 
-100 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+126 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
 
 ## Editing CSV files in Excel
 
@@ -120,6 +120,29 @@ The next time the tool writes the file, it is saved back as a standard CSV.
   (see `config/platforms.json`; names are not case-sensitive).
 - URLs must be full links on that platform, e.g. `https://www.tiktok.com/@qhaze/video/...`.
 - Analytics can only be logged for a platform the video was recorded as published on.
+
+## Project IDs
+
+New projects get an ID like `2026-11-17_ms_nasi-lemak` (date, language, title). Accents are
+simplified (`Café` → `cafe`). Titles in Jawi or other non-Latin scripts get a short code instead,
+e.g. `2026-11-17_ms_jawi-3f9a2c`; the full title is kept in the project. The same title in English
+and Malay never collides. Creating the same title twice in one language on the same day is refused.
+Projects created before v0.3.4 keep their original IDs. Any unique part of an ID works in commands.
+
+`--brand`, `--lang` and `--division` are checked by every command: a typo is an error, not an
+empty list.
+
+## If a project folder is deleted
+
+`ideas` marks ideas whose project no longer exists. To put such an idea back in the backlog:
+
+```bash
+python3 -m factory ideas unlink EN-002
+```
+
+This is refused while the project folder still exists (even if damaged), so a working project
+never loses its idea. Deleting a stage folder or checklist file does not skip a stage: `advance`
+reports it as missing (or use `--force`, which is recorded).
 
 ## If a file can't be opened or saved
 

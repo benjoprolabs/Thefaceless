@@ -16,6 +16,14 @@ def add_division(parser, required=False):
     parser.add_argument("--division", required=required, help="division id, see: niches")
 
 
+def check_brand(ctx, brand):
+    if brand is not None and brand not in ctx.config.brand_ids():
+        known = ", ".join(ctx.config.brand_ids()) or "(none)"
+        raise FactoryError(f"Unknown brand '{brand}'. Use one of: {known} "
+                           "(each brand is a folder in brands/ with a brand.json)")
+    return brand
+
+
 def brand_id(args, ctx):
     return getattr(args, "brand", None) or ctx.config.settings["default_brand"]
 
@@ -28,10 +36,11 @@ def check_language(ctx, language):
 
 
 def check_division(ctx, division, brand=None):
-    if not division:
+    if division is None:
         return division
     if division not in ctx.config.divisions:
-        raise FactoryError(f"Unknown division '{division}'. Choose: {', '.join(ctx.config.divisions)}")
+        raise FactoryError(f"Unknown division '{division}'. Choose: {', '.join(ctx.config.divisions)} "
+                           "(see: python -m factory niches)")
     if brand and division not in ctx.config.brand(brand)["divisions"]:
         raise FactoryError(f"Division '{division}' is not enabled for brand '{brand}'")
     return division

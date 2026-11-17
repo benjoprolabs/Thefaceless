@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.3.3 · **Phase:** 1 (Python CLI, local files)
+**Version:** 0.3.4 · **Phase:** 1 (Python CLI, local files)
 
 ---
 
@@ -116,8 +116,17 @@ brands/qhaze/en/what-if-science/2026-11-17_why-octopuses-have-three-hearts/
 └── 10_analytics/performance.csv
 ```
 
-**Project ID:** `YYYY-MM-DD_slug`, unique per brand. Commands accept any unique part
-of the ID (e.g. `octopus`).
+**Project ID:** `YYYY-MM-DD_<language>_<slug>` (since v0.3.4), unique per brand. Commands
+accept any unique part of the ID (e.g. `octopus`). Projects created earlier keep their
+`YYYY-MM-DD_<slug>` IDs; nothing is renamed.
+
+- The slug is the title in lower-case ASCII; accents are transliterated (`Café crème` → `cafe-creme`).
+- If the title has letters that can't be written in Latin letters (Jawi, Arabic, CJK...), a 6-character
+  fingerprint of the full title is added (`sejarah-3f9a2c`) or used alone (`jawi-3f9a2c`), so different
+  titles never share a slug. The full title is stored in `project.json`.
+- The language in the ID keeps the same title in English and Malay apart.
+- Same title + same language + same day → refused (accidental repeat). A *different* title with the same
+  slug → `-2`, `-3`, ... A folder with the ID that can't be read (damaged) → refused, never overwritten.
 
 **Template resolution** (most specific wins):
 `brands/<brand>/templates/<lang>/` → `brands/<brand>/templates/` → `templates/<lang>/` → `templates/`.
@@ -191,11 +200,13 @@ factory/
 | Damaged `project.json` (invalid JSON, not an object, missing required fields, wrong field types, unknown stage/language/format) | Project skipped; `Warning: Skipped damaged project <path>: <reason>` printed after the command; dashboard shows a count; the folder can't be overwritten by `new` |
 | `project.json` missing optional fields (`brand`, `target_seconds`, `publications`, `idea_id`, `created`) | Safe defaults in memory (brand from the folder, length from the format); written only when the project is next saved |
 | Project folder copied, renamed or moved (id ≠ folder name, or language/division/brand ≠ folder path) | Skipped with a warning saying where it should be |
+| Stage folder, a stage checklist file, or the checklist inside it deleted | Counted as a blocker by `advance` ("missing" / "checklist was removed"); `--force` still overrides and is recorded |
+| Idea linked to a project that was deleted | `ideas` shows a ⚠ hint; `ideas unlink ID` resets status/project_id, refused while any folder with that project ID exists |
 | Two folders with the same project id in a brand | **All** copies skipped with one warning listing both paths, so nothing is listed or counted twice (checked across the whole brand, even when filtering) |
 | Markdown, template or JSON file saved as Windows-1252/Latin-1 or with a BOM | Read correctly (UTF-8 → Windows-1252 → Latin-1) |
 | Broken `config/*.json` or `brand.json` (invalid JSON, wrong shape, missing keys) | Clear error naming the file, line/key and `git checkout -- <file>` to restore |
 | `performance.csv` / `shotlist.csv` deleted, emptied or with columns removed | Standard columns come from the template; extra user columns and old rows are kept; a value is never dropped silently |
-| Unknown `--lang` (any command) | Error listing valid languages; input is case-insensitive (`MS` → `ms`) |
+| Unknown `--lang`, `--brand` or `--division` (any command) | Error listing valid values; input is case-insensitive (`MS` → `ms`); an empty value is an error |
 | `new --idea X --lang L` where L is not the idea's language | `Conflicting options` error explaining both fixes (drop `--lang`, or add the idea to the other language's backlog). A matching `--lang` is allowed. A title, `--division` or `--format` given with `--idea` replaces the idea's value |
 | Permission denied / file locked (e.g. open in Excel) / missing file / disk full / read-only disk | `cli.main` turns any `OSError` into a plain message with the file path and a suggested fix; never a traceback. `new` removes a half-created project folder; if only the idea list can't be updated, the message says the project exists and how to finish the link by hand. An unreadable `project.json` is skipped with reason "permission denied" |
 | Python older than 3.9 | `python -m factory` stops with "needs Python 3.9 or newer" before importing anything else |
@@ -206,7 +217,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (100 tests, < 2 s, no network).
+`python -m unittest discover -s tests -v` (126 tests, < 2 s, no network).
 
 | File | Covers |
 |------|--------|
@@ -217,6 +228,7 @@ factory/
 | `test_audit_fixes.py` | Excel CSV handling, damaged projects, `.gitignore` media rules, `--lang` validation, platform/URL/date/number validation |
 | `test_compat_errors.py` | `--idea`/`--lang` conflicts; friendly permission/file errors (simulated, plus a real read-only test that runs for non-root users); Python 3.9/3.10 grammar, newer-API scan, stdlib-only imports, version guard |
 | `test_hardening.py` | file encodings, broken settings files, incomplete/mistyped `project.json`, copied/misplaced/duplicate projects, analytics and shot-list column recovery, removed leftovers |
+| `test_remaining_fixes.py` | stage gates with deleted folders/files/checklists, `--brand`/`--division` validation, ID generation (accents, Jawi, suffixes, duplicates), EN/MS same-title IDs, `ideas unlink` |
 
 ### Python version support
 
@@ -231,5 +243,5 @@ factory/
 ## 8. Roadmap
 
 Development is paused after the v0.3.0 scope reset (Voice Studio removed) and the
-v0.3.1 audit fixes, the v0.3.2 compatibility / error-handling round and the v0.3.3 hardening round.
+v0.3.1 audit fixes, the v0.3.2 compatibility / error-handling round the v0.3.3 hardening round and the v0.3.4 remaining-issues round.
 The next phase will be decided and approved separately.

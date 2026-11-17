@@ -5,14 +5,15 @@ stage's Markdown files is ticked (use --force to override).
 """
 
 import shutil
+import unicodedata
 
 from factory.core.config import FactoryError
 from factory.core.errors import describe_os_error
-from factory.core.files import read_text, slugify, today, unchecked_items
+from factory.core.files import has_checklist, read_text, title_slug, today, unchecked_items
 from factory.core.options import (add_brand, add_division, add_language, brand_id,
                                   check_division, check_format, check_language)
 from factory.core.projects import Project, find_project, iter_projects
-from factory.core.templates import render_template
+from factory.core.templates import find_template, render_template
 from factory.modules import ideas as ideas_mod
 
 
@@ -34,6 +35,38 @@ def template_values(ctx, brand, language, division, fmt, seconds, title, project
     }
 
 
+def _same_title(a, b):
+    return unicodedata.normalize("NFC", a.strip()).casefold() == unicodedata.normalize("NFC", b.strip()).casefold()
+
+
+def new_project_id(ctx, brand, language, title, created):
+    """<date>_<language>_<slug>, unique within the brand.
+
+    The language is part of the ID, so the same title in English and Malay on
+    the same day can't collide. The same title in the same language on the
+    same day is refused (almost always an accidental repeat). A different title
+    that happens to give the same slug gets -2, -3, ... A folder with the ID
+    that can't be read (damaged project) is never overwritten or guessed past."""
+    base = f"{created}_{language}_{title_slug(title)}"
+    projects = {p.id: p for p in iter_projects(ctx, brand=brand)}
+    for n in range(1, 1000):
+        candidate = base if n == 1 else f"{base}-{n}"
+        existing = projects.get(candidate)
+        if existing is not None and _same_title(existing.meta["title"], title):
+            raise FactoryError(f"A {ctx.config.languages[language]['name']} project with this title was "
+                               f"already created on {created}: {candidate}")
+        if existing is None:
+            taken = sorted(ctx.paths.brand_dir(brand).glob(f"*/*/{candidate}"))
+            if not taken:
+                return candidate
+            # A folder with this ID exists but isn't a readable project (damaged or
+            # duplicated). Its title is unknown, so refuse rather than guess.
+            raise FactoryError(f"A project folder with the ID {candidate} already exists but can't be read: "
+                               f"{taken[0].relative_to(ctx.paths.root)}. Fix or remove it first "
+                               "(see the warnings from: python -m factory status)")
+    raise FactoryError("Too many projects with similar titles today; choose a different title")
+
+
 def create_project(ctx, title, language, division, fmt="short", brand=None, seconds=None,
                    idea_id="", created=None):
     brand = brand or ctx.config.settings["default_brand"]
@@ -46,9 +79,9 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
         raise FactoryError(f"{spec['label']} must be {spec['min_seconds']}–{spec['max_seconds']} seconds")
 
     created = created or today()
-    project_id = f"{created}_{slugify(title)}"
-    if any(p.id == project_id for p in iter_projects(ctx, brand=brand)):
-        raise FactoryError(f"Project already exists: {project_id}")
+    if not title.strip():
+        raise FactoryError("The title can't be empty")
+    project_id = new_project_id(ctx, brand, language, title, created)
     folder = ctx.paths.division_dir(brand, language, division) / project_id
     if folder.exists():
         raise FactoryError(f"Folder already exists: {folder.relative_to(ctx.paths.root)}")
@@ -90,9 +123,28 @@ def create_project(ctx, title, language, division, fmt="short", brand=None, seco
 
 
 def stage_blockers(ctx, project):
-    """Unticked checklist items in the current stage's Markdown files."""
-    stage_dir = project.stage_dir(ctx, project.stage)
+    """Reasons the current stage can't be completed yet.
+
+    - every unticked '- [ ]' item in the stage's Markdown files;
+    - the stage folder, or a checklist file the stage's template provides,
+      is missing (deleting it must not skip the gate);
+    - a checklist file whose template has a checklist no longer has any items.
+    """
+    stage = ctx.config.stage(project.stage)
+    stage_dir = project.folder / stage["folder"]
+    if not stage_dir.is_dir():
+        return [f"stage folder {stage['folder']}/ is missing. Restore it (e.g. git checkout -- "
+                f"\"{project.folder.name}/{stage['folder']}\") or use --force"]
     blockers = []
+    brand, language = project.meta.get("brand"), project.language
+    for name in (t for t in stage["templates"] if t.endswith(".md")):
+        if not (stage_dir / name).is_file():
+            blockers.append(f"{name}: file is missing. Restore it or use --force")
+            continue
+        text = read_text(stage_dir / name)
+        template_text = read_text(find_template(ctx.paths, name, brand, language))
+        if has_checklist(template_text) and not has_checklist(text):
+            blockers.append(f"{name}: the stage checklist was removed. Restore it or use --force")
     for md in sorted(stage_dir.glob("*.md")):
         blockers += [f"{md.name}: {item}" for item in unchecked_items(read_text(md))]
     return blockers
@@ -142,7 +194,11 @@ def cmd_new(args, ctx):
         language, idea = ideas_mod.find_idea(ctx, brand, args.idea)
         check_idea_language(ctx, idea, language, args.lang)
         if idea["project_id"]:
-            raise FactoryError(f"Idea {idea['id']} already has project {idea['project_id']}")
+            hint = ""
+            if ideas_mod.linked_project_missing(ctx, brand, idea):
+                hint = (f". That project no longer exists; if it was deleted, run: "
+                        f"python -m factory ideas unlink {idea['id']}")
+            raise FactoryError(f"Idea {idea['id']} already has project {idea['project_id']}{hint}")
         title = title or idea["title"]
         division = division or idea["division"]
         fmt = fmt or idea["format"]
