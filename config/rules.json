@@ -55,5 +55,15 @@
       "long": 90
     },
     "max_videos_per_channel_per_day": 2
+  },
+  "shots": {
+    "max_shot_seconds": {
+      "short": 5
+    },
+    "self_made_sources": [
+      "self-made",
+      "own",
+      "original"
+    ]
   }
 }

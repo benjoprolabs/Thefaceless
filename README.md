@@ -4,7 +4,7 @@ A local, file-based system for producing faceless videos in **English and Bahasa
 from idea to published to measured. It uses plain files plus a Python command-line tool, with
 no database, no login and no paid services.
 
-> **Status:** Phase 2 (Content Production Engine) in progress: M5 Fact-Checking System (v0.4.5); M0–M4 complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Status:** Phase 2 (Content Production Engine) in progress: M6 Shot List Generator (v0.4.6); M0–M5 complete. Phase 1 complete. Plan: [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md). Free-first: no paid APIs. Roadmap and design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 | | |
 |---|---|
@@ -74,6 +74,7 @@ then run `advance`. If anything is unticked, `advance` lists what's missing.
 | Content Planning | `plan check P` · `plan set-date P YYYY-MM-DD` · `plan calendar [--lang] [--division] [--from] [--to]` |
 | 4 Script Writing Engine | `script check P` · `script text P` · `script shotlist P` · `script scaffold P` · `script snapshot P [--note "..."]` · `script versions P` · `script diff P v1 v2` (or `v2 current`) |
 | Fact-Checking System | `factcheck sync P` · `factcheck check P` · `factcheck report P` |
+| Shot List Generator | `shots generate P [--force]` (same as `script shotlist`) · `shots link P SCENE --asset AS0001` · `shots check P` |
 | 5 Visual Library | `library visuals [--division ...]` |
 | 6 Production Manager | `new "Title" --lang en --division psychology --format short [--seconds 60]` · `new --idea MS-002` (language comes from the idea) · `status` · `show P` · `check P [--stage S] [--all]` · `advance P [--force]` · `back P` · `migrate [--apply]` |
 | 7 Publishing Manager | `publish` · `publish record P --platform youtube --url https://youtu.be/...` |
@@ -120,7 +121,7 @@ original files; existing `research.md` files are never modified automatically.
 python3 -m unittest discover -s tests -v
 ```
 
-292 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
+317 tests, no network needed. One test needs a non-administrator account and is skipped when run as root/admin.
 
 ## Research sources
 
@@ -180,6 +181,23 @@ Verdicts: ✅ confirmed, ⚠️ needs softer wording, ❌ remove or replace (or 
   only by sources with reliability 1–2 get a warning.
 - Projects already past Fact Check (such as the Phase 1 sample, whose rows cite `research.md`
   numbers) get warnings instead of failures.
+
+## Shot lists
+
+`06_visuals/shotlist.csv` has a row per scene: times, visual, source, licence, file, status
+(`todo`, `in_progress`, `done`) and `asset_id` (a link to `assets/register.csv`).
+
+- `shots generate P` (or `script shotlist P`) builds it from the script and **merges** on later runs:
+  rows you filled in are kept, new scenes are added and times are refreshed. Rows of scenes that left
+  the script get status `removed` and are never deleted; delete them yourself. A scene you split
+  into several rows keeps your times. `--force` rebuilds the file from scratch.
+- `shots link P 2 --asset AS0001` links scene 2 to a registered asset; it fills `file` only if empty.
+- `shots check P`. A project can't leave the Visuals stage while a scene has no row, a row isn't
+  `done`, an external source has no licence (a linked asset's licence from the register counts), or
+  a row links an asset that isn't registered. Warnings: time gaps or overlaps, short-form shots over
+  5 s, files not found locally (media isn't kept in git), removed rows. Sources that need no licence
+  (`self-made`, `own`, `original`, or empty) and the 5 s limit are in `config/rules.json`.
+- Projects already past Visuals (such as the sample) get warnings instead of failures.
 
 ## Idea statuses
 

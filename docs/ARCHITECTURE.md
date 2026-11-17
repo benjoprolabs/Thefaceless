@@ -1,6 +1,6 @@
 # QHAZE Faceless Content Factory: Architecture
 
-**Version:** 0.4.5 · **Phase:** 2, M5 Fact-Checking System (Python CLI, local files)
+**Version:** 0.4.6 · **Phase:** 2, M6 Shot List Generator (Python CLI, local files)
 
 ---
 
@@ -54,7 +54,7 @@ Visual Production → Video Editing → Quality Control → Publishing → Analy
 | 3 | `script`    | `03_script`    | `script.md` (Malay version in `templates/ms/`) | Script Writing Engine |
 | 4 | `factcheck` | `04_factcheck` | `factcheck.md` | Fact-Checking System |
 | 5 | `voice`     | `05_voice`     | `voice.md` (manual checklist; voice-over produced outside this system) | Production Manager |
-| 6 | `visuals`   | `06_visuals`   | `visuals.md`, `shotlist.csv` | Visual Library |
+| 6 | `visuals`   | `06_visuals`   | `visuals.md`, `shotlist.csv` | Shot List Generator |
 | 7 | `edit`      | `07_edit`      | `edit.md` | Production Manager |
 | 8 | `qc`        | `08_qc`        | `qc.md` | Production Manager |
 | 9 | `publish`   | `09_publish`   | `publish.md` | Publishing Manager |
@@ -66,7 +66,8 @@ Markdown files is ticked **and** the stage's automated checks (`factory/core/che
 no FAIL findings (since v0.4.0: script length and empty scenes at Script, plus the spoken
 Product & Affiliate disclosure since v0.4.4; at Fact Checking, claims missing from the fact
 check and, since v0.4.5, claims without a verdict or a known, verified source, ❌ claims left in
-the script and ⚠️ claims without a fix). `check P` shows them. `--force` overrides both; the override and the
+the script and ⚠️ claims without a fix; since v0.4.6 at Visual Production, scenes without a
+shot list row, rows not `done`, external sources without a licence and unregistered asset links). `check P` shows them. `--force` overrides both; the override and the
 skipped finding codes are recorded in the project history and shown on the dashboard.
 `back P` moves a project back one stage (recorded; files unchanged).
 
@@ -114,7 +115,7 @@ brands/qhaze/en/what-if-science/2026-11-17_why-octopuses-have-three-hearts/
 ├── 03_script/script.md, versions/vN.md (snapshots, created by `script snapshot`)
 ├── 04_factcheck/factcheck.md
 ├── 05_voice/voice.md
-├── 06_visuals/visuals.md, shotlist.csv
+├── 06_visuals/visuals.md, shotlist.csv (+ asset_id since v0.4.6)
 ├── 07_edit/edit.md
 ├── 08_qc/qc.md
 ├── 09_publish/publish.md
@@ -155,6 +156,7 @@ A new brand or language can restyle any template without code changes.
 | – | Content Planning | `modules/planning.py` | `plan check / set-date / calendar` | Reads and checks `plan.md`, `planned_publish`, publishing calendar with per-channel clash warnings |
 | 4 | Script Writing Engine | `modules/scripts.py` | `script check / text / shotlist / scaffold / snapshot / versions / diff` | Parse scenes, word count → duration vs format limits, per-scene timing at the language's rate, Script rules (hook, sentence length, call to action, disclosure, sensitive terms), [F#] claim coverage, scaffold from the plan outline, versions in `03_script/versions/` with `difflib` diffs, shot list from scenes |
 | – | Fact-Checking System | `modules/factcheck.py` | `factcheck sync / check / report` | Reads the `factcheck.md` table, adds rows for new [F#] claims (never changes edited rows), checks verdicts and cited source IDs against `sources.csv` and their verification status |
+| – | Shot List Generator | `modules/shots.py` | `shots generate / link / check` (`script shotlist` = `shots generate`) | Merges `shotlist.csv` with the script (filled-in fields kept, times refreshed, removed scenes flagged), links rows to the asset register, Visuals-stage checks |
 | 5 | Visual Library | `modules/library.py` | `library visuals` | Visual style per division |
 | 6 | Production Manager | `modules/production.py` | `new`, `status`, `show`, `advance` | Create projects from templates, stage gates, history |
 | 7 | Publishing Manager | `modules/publishing.py` | `publish`, `publish record` | Publish queue, per-platform publication records |
@@ -228,7 +230,7 @@ factory/
 
 ## 7. Testing
 
-`python -m unittest discover -s tests -v` (292 tests, < 8 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
+`python -m unittest discover -s tests -v` (317 tests, < 9 s, no network). CI: `.github/workflows/tests.yml` (free GitHub Actions).
 
 | File | Covers |
 |------|--------|
@@ -246,6 +248,7 @@ factory/
 | `test_m3_planning.py` | `plan.md` reading, every Planning rule, outline length, `set-date`, calendar filters and clashes, the Planning gate |
 | `test_m4_scripts.py` | scaffold (one scene per outline point, refuses written scripts, CRLF), snapshots/versions/diff, per-scene timing (Malay rate), every Script rule, rules from config, the Script gate |
 | `test_m5_factcheck.py` | `factcheck.md` reading (verdicts, source IDs), `sync` (adds rows only, edited rows unchanged, CRLF), every Fact check rule, report, the Fact Check gate, projects past the stage, sample unchanged |
+| `test_m6_shots.py` | merging generator (filled-in fields kept, new/removed scenes, split scenes, Excel and old files, `--force`, alias), `shots link`, every Shot list rule, rules from config, the Visuals gate, sample unchanged |
 
 ### Python version support
 

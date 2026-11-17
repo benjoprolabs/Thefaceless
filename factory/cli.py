@@ -13,9 +13,9 @@ from factory.core.config import Context, FactoryError
 from factory.core.errors import describe_os_error
 from factory.core.options import check_brand, check_division, check_language
 from factory.modules import (analytics, assets, dashboard, factcheck, ideas, library, niches,
-                             planning, production, publishing, research, scripts)
+                             planning, production, publishing, research, scripts, shots)
 
-MODULES = [dashboard, niches, ideas, research, planning, scripts, factcheck, library, production, publishing,
+MODULES = [dashboard, niches, ideas, research, planning, scripts, factcheck, shots, library, production, publishing,
            analytics, assets]
 
 

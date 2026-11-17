@@ -2,6 +2,7 @@
 
 import unittest
 
+from factory.core.files import read_csv, write_csv
 from factory.core.projects import find_project
 from tests.helpers import make_sandbox, remove_sandbox, run_cli, tick_all
 
@@ -49,7 +50,7 @@ class TestCLIWorkflow(unittest.TestCase):
         self.assertEqual(sorted(commands), sorted([
             "dashboard", "niches", "ideas", "script", "library", "new", "status",
             "show", "advance", "check", "back", "migrate", "publish", "analytics", "assets", "research", "plan",
-            "factcheck"]))
+            "factcheck", "shots"]))
 
     def test_errors_are_friendly(self):
         self.assertIn("not found", self.bad("new", "--idea", "EN-999"))
@@ -109,8 +110,18 @@ class TestCLIWorkflow(unittest.TestCase):
 
         # 6 Visuals → 7 Edit → 8 QC → 9 Publish
         self.ok("script", "shotlist", pid)
-        self.bad("script", "shotlist", pid)  # refuses to overwrite
-        for stage_file in ("06_visuals/visuals.md", "07_edit/edit.md", "08_qc/qc.md"):
+        shot = p.folder / "06_visuals/shotlist.csv"
+        rows = read_csv(shot)
+        rows[0]["visual_description"] = "Crowd looking at a stage"  # filled in by hand
+        write_csv(shot, rows, list(rows[0]))
+        self.assertIn("Nothing changed", self.ok("script", "shotlist", pid))  # M6: merges, never overwrites
+        self.assertEqual(read_csv(shot)[0]["visual_description"], "Crowd looking at a stage")
+        tick_all(p.folder / "06_visuals/visuals.md")
+        self.assertIn("SHOT_NOT_DONE", self.bad("advance", pid))  # M6 gate: every row 'done'
+        write_csv(shot, [{**r, "status": "done"} for r in read_csv(shot)], list(rows[0]))
+        self.ok("shots", "check", pid)  # no FAIL (warnings only)
+        self.ok("advance", pid)
+        for stage_file in ("07_edit/edit.md", "08_qc/qc.md"):
             tick_all(p.folder / stage_file)
             self.ok("advance", pid)
         self.ok("publish", "record", pid, "--platform", "youtube_shorts", "--url", "https://youtube.com/shorts/abc123")

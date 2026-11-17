@@ -1,2 +1,2 @@
-scene,start_sec,end_sec,narration_summary,visual_type,visual_description,source,license,file,status
-1,0,5,Hook,stock_footage,,,,,todo
+scene,start_sec,end_sec,narration_summary,visual_type,visual_description,source,license,file,status,asset_id
+1,0,5,Hook,stock_footage,,,,,todo,

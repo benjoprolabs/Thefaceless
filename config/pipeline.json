@@ -5,7 +5,7 @@
     {"id": "script",    "folder": "03_script",    "label": "Script Writing",   "module": "Script Writing Engine","templates": ["script.md"]},
     {"id": "factcheck", "folder": "04_factcheck", "label": "Fact Checking",    "module": "Fact-Checking System","templates": ["factcheck.md"]},
     {"id": "voice",     "folder": "05_voice",     "label": "Voice-over",       "module": "Production Manager",  "templates": ["voice.md"]},
-    {"id": "visuals",   "folder": "06_visuals",   "label": "Visual Production","module": "Visual Library",      "templates": ["visuals.md", "shotlist.csv"]},
+    {"id": "visuals",   "folder": "06_visuals",   "label": "Visual Production","module": "Shot List Generator", "templates": ["visuals.md", "shotlist.csv"]},
     {"id": "edit",      "folder": "07_edit",      "label": "Video Editing",    "module": "Production Manager",  "templates": ["edit.md"]},
     {"id": "qc",        "folder": "08_qc",        "label": "Quality Control",  "module": "Production Manager",  "templates": ["qc.md"]},
     {"id": "publish",   "folder": "09_publish",   "label": "Publishing",       "module": "Publishing Manager",  "templates": ["publish.md"]},

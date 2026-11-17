@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Approved plan. Done: M0 (v0.4.0), M1 (v0.4.1), M2 (v0.4.2), M3 (v0.4.3), M4 (v0.4.4). In progress: M5 Fact-Checking System (v0.4.5) |
+| **Status** | Approved plan. Done: M0 (v0.4.0), M1 (v0.4.1), M2 (v0.4.2), M3 (v0.4.3), M4 (v0.4.4), M5 (v0.4.5). In progress: M6 Shot List Generator (v0.4.6) |
 | **Baseline** | Phase 1, v0.3.4 (`main` at `b021dd8`) |
 | **Target** | v0.5.0, Phase 2 complete |
 | **Roadmap** | Phase 2 of 6 (see [ARCHITECTURE.md](ARCHITECTURE.md#8-roadmap-official-approved)) |

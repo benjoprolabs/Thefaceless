@@ -16,6 +16,15 @@ def list_assets(ctx, asset_type=None):
     return [r for r in rows if not asset_type or r["type"] == asset_type]
 
 
+def find_asset(ctx, asset_id):
+    """The register row with this ID (case-insensitive), or a FactoryError."""
+    wanted = (asset_id or "").strip().upper()
+    for r in list_assets(ctx):
+        if (r.get("id") or "").strip().upper() == wanted and wanted:
+            return r
+    raise FactoryError(f"Asset '{asset_id}' is not in assets/register.csv. See: python -m factory assets")
+
+
 def add_asset(ctx, file, asset_type, source="", license="", notes=""):
     if asset_type not in TYPES:
         raise FactoryError(f"Type must be one of: {', '.join(TYPES)}")

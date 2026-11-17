@@ -15,12 +15,11 @@ Phase 2, M4 (v0.4.4):
 import difflib
 import re
 
-from factory.core.files import read_csv_table, read_text, today, write_csv, write_text_exact
+from factory.core.files import read_text, today, write_text_exact
 from factory.core.config import FactoryError
 from factory.core.checks import FAIL, WARN, Finding, failures, format_finding, register
 from factory.core.errors import display_path
 from factory.core.projects import find_project
-from factory.core.templates import csv_columns
 
 SCENE = re.compile(r"^##\s*\[SCENE\s+(\d+)\]\s*(.*)$")
 COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
@@ -398,15 +397,10 @@ def cmd_text(args, ctx):
 
 
 def cmd_shotlist(args, ctx):
-    p = find_project(ctx, args.project)
-    path = p.stage_dir(ctx, "visuals") / "shotlist.csv"
-    header, existing = read_csv_table(path)  # a missing file is simply recreated
-    if len(existing) > 1 and not args.force:
-        raise FactoryError("shotlist.csv already has rows. Use --force to overwrite.")
-    rows = build_shotlist(ctx, p)
-    write_csv(path, rows, csv_columns(ctx.paths, "shotlist.csv", header, p.meta["brand"], p.language))
-    print(f"Wrote {len(rows)} scenes to {display_path(path, ctx.paths.root)}")
-    return 0
+    """Alias of `shots generate` (M6): merges, so rows you filled in are kept;
+    --force rebuilds from scratch."""
+    from factory.modules import shots  # shots builds on this module; imported on use
+    return shots.run_generate(ctx, find_project(ctx, args.project), args.force)
 
 
 def cmd_scaffold(args, ctx):
@@ -462,9 +456,9 @@ def register(sub):
     t = s.add_parser("text", help="print the narration only (for recording or reading aloud)")
     t.add_argument("project")
     t.set_defaults(func=cmd_text)
-    sl = s.add_parser("shotlist", help="create shot list rows from script scenes")
+    sl = s.add_parser("shotlist", help="same as: shots generate (merges; keeps rows you filled in)")
     sl.add_argument("project")
-    sl.add_argument("--force", action="store_true")
+    sl.add_argument("--force", action="store_true", help="rebuild from scratch (filled-in rows are lost)")
     sl.set_defaults(func=cmd_shotlist)
     sc = s.add_parser("scaffold", help="one [SCENE] per plan.md outline point (unedited template only)")
     sc.add_argument("project")
